@@ -85,6 +85,8 @@ class AuthManager(context: Context) {
         this.isAdmin = user.isAdmin
     }
 
+    fun saveUser(user: UserProfile?) = saveUserProfile(user)
+
     fun getUserProfile(): UserProfile? {
         val uid = userId ?: return null
         val uname = userName ?: "User"
