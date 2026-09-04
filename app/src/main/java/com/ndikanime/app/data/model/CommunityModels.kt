@@ -314,3 +314,107 @@ data class RegisterRequest(
     @SerializedName("email") val email: String,
     @SerializedName("password") val password: String
 )
+
+// ===== GACHA & CARDS =====
+data class CardItem(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("subtitle") val subtitle: String? = null,
+    @SerializedName("anime") val anime: String? = null,
+    @SerializedName("rarity") val rarity: String = "R",
+    @SerializedName("element") val element: String? = null,
+    @SerializedName("atk") val atk: Int = 0,
+    @SerializedName("def") val def: Int = 0,
+    @SerializedName("hp") val hp: Int = 0,
+    @SerializedName("image") val image: String? = null,
+    @SerializedName("quote") val quote: String? = null,
+    @SerializedName("description") val description: String? = null
+)
+
+data class UserCardItem(
+    @SerializedName("cardId") val cardId: String,
+    @SerializedName("count") var count: Int = 1,
+    @SerializedName("level") var level: Int = 1,
+    @SerializedName("obtainedAt") val obtainedAt: Long = System.currentTimeMillis()
+)
+
+data class GachaStats(
+    @SerializedName("coins") var coins: Long = 500,
+    @SerializedName("tickets") var tickets: Long = 3,
+    @SerializedName("totalPulls") var totalPulls: Long = 0,
+    @SerializedName("pitySr") var pitySr: Int = 0,
+    @SerializedName("pityUr") var pityUr: Int = 0
+)
+
+// ===== CLAN =====
+data class ClanItem(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("tag") val tag: String? = null,
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("icon") val icon: String? = null,
+    @SerializedName("color") val color: String? = null,
+    @SerializedName("level") val level: Int = 1,
+    @SerializedName("xp") val xp: Long = 0,
+    @SerializedName("leaderId") val leaderId: String? = null,
+    @SerializedName("leaderName") val leaderName: String? = null,
+    @SerializedName("memberCount") var memberCount: Int = 1,
+    @SerializedName("createdAt") val createdAt: Long = System.currentTimeMillis()
+)
+
+data class ClanMemberItem(
+    @SerializedName("userId") val userId: String,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("avatar") val avatar: String? = null,
+    @SerializedName("role") val role: String = "MEMBER",
+    @SerializedName("joinedAt") val joinedAt: Long = System.currentTimeMillis()
+)
+
+// ===== DIRECT MESSAGES =====
+data class DMConversation(
+    @SerializedName("convId") val convId: String,
+    @SerializedName("otherUserId") val otherUserId: String,
+    @SerializedName("otherUserName") val otherUserName: String,
+    @SerializedName("otherUserAvatar") val otherUserAvatar: String? = null,
+    @SerializedName("lastMessage") var lastMessage: String? = null,
+    @SerializedName("lastTimestamp") var lastTimestamp: Long = 0L
+)
+
+data class DMMessage(
+    @SerializedName("id") val id: String = "",
+    @SerializedName("senderId") val senderId: String = "",
+    @SerializedName("senderName") val senderName: String = "",
+    @SerializedName("senderAvatar") val senderAvatar: String? = null,
+    @SerializedName("text") val text: String = "",
+    @SerializedName("timestamp") val timestamp: Long = System.currentTimeMillis()
+)
+
+// ===== COMMENTS =====
+data class CommentItem(
+    @SerializedName("id") val id: String = "",
+    @SerializedName("userId") val userId: String = "",
+    @SerializedName("name") val name: String = "",
+    @SerializedName("avatar") val avatar: String? = null,
+    @SerializedName("level") val level: Long = 1,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("text") val text: String = "",
+    @SerializedName("likes") var likes: Int = 0,
+    @SerializedName("timestamp") val timestamp: Long = System.currentTimeMillis()
+)
+
+// ===== QUESTS & STREAK =====
+data class StreakData(
+    @SerializedName("count") var count: Int = 1,
+    @SerializedName("lastActiveDate") var lastActiveDate: String = "",
+    @SerializedName("lastClaimedDate") var lastClaimedDate: String = ""
+)
+
+data class QuestItem(
+    @SerializedName("id") val id: String,
+    @SerializedName("title") val title: String,
+    @SerializedName("desc") val desc: String,
+    @SerializedName("current") var current: Int,
+    @SerializedName("target") val target: Int,
+    @SerializedName("rewardCoins") val rewardCoins: Long,
+    @SerializedName("isClaimed") var isClaimed: Boolean = false
+)

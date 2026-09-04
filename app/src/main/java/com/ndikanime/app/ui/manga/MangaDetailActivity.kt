@@ -15,6 +15,7 @@ import com.ndikanime.app.data.model.MangaChapterItem
 import com.ndikanime.app.data.model.MangaDetail
 import com.ndikanime.app.data.storage.HistoryStorage
 import com.ndikanime.app.databinding.ActivityMangaDetailBinding
+import com.ndikanime.app.ui.community.CommentsBottomSheet
 import kotlinx.coroutines.launch
 
 class MangaDetailActivity : AppCompatActivity() {
@@ -70,6 +71,12 @@ class MangaDetailActivity : AppCompatActivity() {
             updateBookmarkIcon()
             val msg = if (isFav) "Ditambahkan ke Favorit" else "Dihapus dari Favorit"
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnCommentManga.setOnClickListener {
+            if (mangaSlug.isNotBlank()) {
+                CommentsBottomSheet(this, "manga", mangaSlug).show()
+            }
         }
 
         binding.btnReadFirstChapter.setOnClickListener {

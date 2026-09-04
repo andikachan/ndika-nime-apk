@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     private const val ANIME_BASE_URL = "https://api.ndikacunk.my.id/v1/"
-    private const val COMMUNITY_BASE_URL = "https://ndichan.xyz/api/v1/"
 
     private val authManager by lazy { AuthManager(NdikaNimeApp.instance) }
 
@@ -52,14 +51,5 @@ object ApiClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(AnimeApiService::class.java)
-    }
-
-    val community: CommunityApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(COMMUNITY_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(CommunityApiService::class.java)
     }
 }

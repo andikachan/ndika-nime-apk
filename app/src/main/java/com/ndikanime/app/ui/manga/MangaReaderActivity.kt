@@ -12,6 +12,7 @@ import com.ndikanime.app.data.model.MangaChapterItem
 import com.ndikanime.app.data.model.MangaReadData
 import com.ndikanime.app.data.storage.HistoryStorage
 import com.ndikanime.app.databinding.ActivityMangaReaderBinding
+import com.ndikanime.app.ui.community.CommentsBottomSheet
 import kotlinx.coroutines.launch
 
 class MangaReaderActivity : AppCompatActivity() {
@@ -49,6 +50,12 @@ class MangaReaderActivity : AppCompatActivity() {
     private fun setupViews() {
         binding.tvReaderTitle.text = if (mangaTitle.isNotBlank()) "$mangaTitle - $chapterTitle" else chapterTitle
         binding.btnBackReader.setOnClickListener { finish() }
+
+        binding.btnCommentReader.setOnClickListener {
+            if (chapterSlug.isNotBlank()) {
+                CommentsBottomSheet(this, "manga", chapterSlug).show()
+            }
+        }
 
         val layoutManager = LinearLayoutManager(this)
         binding.rvMangaPages.layoutManager = layoutManager

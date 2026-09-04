@@ -11,7 +11,8 @@ import com.ndikanime.app.databinding.ItemChatMessageBinding
 import java.util.Date
 
 class ChatAdapter(
-    private var messages: List<ChatMessage> = emptyList()
+    private var messages: List<ChatMessage> = emptyList(),
+    private val onUserClick: ((ChatMessage) -> Unit)? = null
 ) : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
 
     fun submitList(newMessages: List<ChatMessage>) {
@@ -41,6 +42,13 @@ class ChatAdapter(
 
             val timeMs = item.timestampMs ?: System.currentTimeMillis()
             binding.tvChatTime.text = DateFormat.format("HH:mm", Date(timeMs))
+
+            binding.ivUserAvatar.setOnClickListener {
+                onUserClick?.invoke(item)
+            }
+            binding.tvSenderName.setOnClickListener {
+                onUserClick?.invoke(item)
+            }
 
             binding.ivUserAvatar.load(item.getDisplayAvatar()) {
                 crossfade(true)

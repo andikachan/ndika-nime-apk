@@ -25,6 +25,7 @@ import com.ndikanime.app.data.model.EpisodeDetailData
 import com.ndikanime.app.data.model.ServerItem
 import com.ndikanime.app.data.storage.HistoryStorage
 import com.ndikanime.app.databinding.ActivityWatchBinding
+import com.ndikanime.app.ui.community.CommentsBottomSheet
 import kotlinx.coroutines.launch
 
 class WatchActivity : AppCompatActivity() {
@@ -96,9 +97,19 @@ class WatchActivity : AppCompatActivity() {
         val btnForward = binding.playerView.findViewById<ImageButton>(R.id.btnForward)
         val btnFullscreen = binding.playerView.findViewById<ImageButton>(R.id.btnFullscreen)
         val btnEpisodeList = binding.playerView.findViewById<ImageButton>(R.id.btnEpisodeList)
+        val btnComments = binding.playerView.findViewById<ImageButton>(R.id.btnComments)
 
         btnBack?.setOnClickListener { finish() }
         tvTitle?.text = if (animeTitle.isNotBlank()) "$animeTitle - $episodeTitle" else episodeTitle
+
+        btnComments?.setOnClickListener {
+            val target = if (episodeId.isNotBlank()) episodeId else animeId
+            if (target.isNotBlank()) {
+                CommentsBottomSheet(this, "anime", target).show()
+            } else {
+                Toast.makeText(this, "Episode belum dipilih", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         btnRewind?.setOnClickListener {
             exoPlayer?.let { p ->

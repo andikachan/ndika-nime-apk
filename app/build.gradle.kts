@@ -79,4 +79,7 @@ dependencies {
 
     // Zoomable Image view for Manga
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
+    // BCrypt password hashing for Upstash auth
+    implementation("org.mindrot:jbcrypt:0.4")
 }

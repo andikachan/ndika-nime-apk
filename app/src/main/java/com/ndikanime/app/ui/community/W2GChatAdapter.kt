@@ -49,7 +49,7 @@ class W2GChatAdapter(
 
             val avatar = item.userAvatar
             if (!avatar.isNullOrBlank()) {
-                val url = if (avatar.startsWith("/")) "https://ndichan.xyz$avatar" else avatar
+                val url = if (avatar.startsWith("/")) "https://api.dicebear.com/7.x/bottts/png?seed=${avatar.hashCode()}" else avatar
                 binding.ivW2GChatAvatar.load(url) { crossfade(true) }
             } else {
                 binding.ivW2GChatAvatar.setImageResource(R.drawable.kaguya)

@@ -119,7 +119,7 @@ class AnimeFragment : Fragment() {
     private fun updateProfileAvatar() {
         val avatar = authManager.userAvatar
         if (!avatar.isNullOrBlank()) {
-            val url = if (avatar.startsWith("/")) "https://ndichan.xyz$avatar" else avatar
+            val url = if (avatar.startsWith("/")) "https://api.dicebear.com/7.x/bottts/png?seed=${avatar.hashCode()}" else avatar
             binding.btnProfileTop.load(url) { crossfade(true) }
         } else {
             binding.btnProfileTop.setImageResource(R.drawable.kaguya)

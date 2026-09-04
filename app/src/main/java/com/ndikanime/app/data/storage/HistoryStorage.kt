@@ -42,12 +42,14 @@ class HistoryStorage(context: Context) {
         if (list.size > 50) list.removeAt(list.lastIndex)
         saveList("anime_history", list)
 
-        // Sync to remote API if logged in
-        if (authManager.isLoggedIn) {
+        // Sync to remote Upstash Redis if logged in
+        val uid = authManager.userId
+        if (authManager.isLoggedIn && !uid.isNullOrBlank()) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val epIdx = episodeIndex ?: episodeTitle.replace(Regex("[^0-9]"), "").ifBlank { "1" }
-                    ApiClient.community.postHistory(
+                    com.ndikanime.app.data.upstash.UpstashRepository.saveRemoteHistory(
+                        uid,
                         HistoryPostPayload(
                             type = "anime",
                             animeId = id,
@@ -91,12 +93,14 @@ class HistoryStorage(context: Context) {
         if (list.size > 50) list.removeAt(list.lastIndex)
         saveList("manga_history", list)
 
-        // Sync to remote API if logged in
-        if (authManager.isLoggedIn) {
+        // Sync to remote Upstash Redis if logged in
+        val uid = authManager.userId
+        if (authManager.isLoggedIn && !uid.isNullOrBlank()) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val chNum = chapterTitle.replace(Regex("[^0-9.]"), "").ifBlank { "1" }
-                    ApiClient.community.postHistory(
+                    com.ndikanime.app.data.upstash.UpstashRepository.saveRemoteHistory(
+                        uid,
                         HistoryPostPayload(
                             type = "manga",
                             animeId = slug,
@@ -118,10 +122,10 @@ class HistoryStorage(context: Context) {
     }
 
     suspend fun syncRemoteHistory(): Boolean {
-        if (!authManager.isLoggedIn) return false
+        val uid = authManager.userId
+        if (!authManager.isLoggedIn || uid.isNullOrBlank()) return false
         return try {
-            val res = ApiClient.community.getHistory()
-            val remoteList = res.data ?: emptyList()
+            val remoteList = com.ndikanime.app.data.upstash.UpstashRepository.getRemoteHistory(uid)
             if (remoteList.isNotEmpty()) {
                 val animeList = getAnimeHistory().toMutableList()
                 val mangaList = getMangaHistory().toMutableList()
@@ -215,10 +219,11 @@ class HistoryStorage(context: Context) {
             }
         }
 
-        if (authManager.isLoggedIn && (type == "anime" || type == "manga")) {
+        val uid = authManager.userId
+        if (authManager.isLoggedIn && !uid.isNullOrBlank() && (type == "anime" || type == "manga")) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    ApiClient.community.deleteHistory(HistoryDeletePayload(animeId = id, type = type))
+                    com.ndikanime.app.data.upstash.UpstashRepository.deleteRemoteHistory(uid, id, type)
                 } catch (e: Exception) {}
             }
         }
@@ -231,10 +236,11 @@ class HistoryStorage(context: Context) {
             "favorite" -> prefs.edit().remove("favorites").apply()
         }
 
-        if (authManager.isLoggedIn && (type == "anime" || type == "manga")) {
+        val uid = authManager.userId
+        if (authManager.isLoggedIn && !uid.isNullOrBlank() && (type == "anime" || type == "manga")) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    ApiClient.community.deleteHistory(HistoryDeletePayload(animeId = null, type = type))
+                    com.ndikanime.app.data.upstash.UpstashRepository.deleteRemoteHistory(uid, null, type)
                 } catch (e: Exception) {}
             }
         }

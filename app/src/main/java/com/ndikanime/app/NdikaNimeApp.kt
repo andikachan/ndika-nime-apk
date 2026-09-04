@@ -22,7 +22,6 @@ class NdikaNimeApp : Application(), ImageLoaderFactory {
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                     .header("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36")
-                    .header("Referer", "https://ndichan.xyz/")
                     .build()
                 chain.proceed(request)
             }

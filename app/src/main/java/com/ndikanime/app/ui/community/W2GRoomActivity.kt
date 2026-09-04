@@ -126,10 +126,11 @@ class W2GRoomActivity : AppCompatActivity() {
         binding.pbW2GVideoLoading.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
-                val res = ApiClient.community.getW2GRoomDetail(roomId, passcode)
+                val res = com.ndikanime.app.data.upstash.UpstashRepository.getW2GRoomDetail(roomId, passcode)
                 if (res.success && res.room != null) {
                     currentRoom = res.room
-                    isHost = res.isHost
+                    val myId = authManager.userId
+                    isHost = res.room.hostId == myId || res.isHost
                     bindRoomInfo(res.room, res.members ?: emptyList(), res.chat ?: emptyList())
                     startHeartbeatLoop()
                 } else {
@@ -194,13 +195,7 @@ class W2GRoomActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                ApiClient.community.syncW2G(
-                    W2GSyncRequest(
-                        roomId = roomId,
-                        isPlaying = isPlaying,
-                        currentTime = currentSec
-                    )
-                )
+                com.ndikanime.app.data.upstash.UpstashRepository.syncW2GPlayback(roomId, isPlaying, currentSec)
             } catch (e: Exception) {}
         }
     }
@@ -211,13 +206,17 @@ class W2GRoomActivity : AppCompatActivity() {
                 try {
                     val currentSec = (exoPlayer?.currentPosition ?: 0L) / 1000.0
                     val lastSeq = chatMessages.mapNotNull { it.seq }.maxOrNull() ?: 0L
+                    val user = authManager.getUserProfile() ?: UserProfile(
+                        id = authManager.userId ?: "guest",
+                        name = authManager.userName ?: "Tamu",
+                        picture = authManager.userAvatar
+                    )
 
-                    val res = ApiClient.community.sendW2GHeartbeat(
-                        W2GHeartbeatRequest(
-                            roomId = roomId,
-                            lastSeq = lastSeq,
-                            userCurrentTime = currentSec
-                        )
+                    val res = com.ndikanime.app.data.upstash.UpstashRepository.sendW2GHeartbeat(
+                        roomId,
+                        user,
+                        currentSec,
+                        lastSeq
                     )
 
                     if (res.success) {
@@ -286,15 +285,15 @@ class W2GRoomActivity : AppCompatActivity() {
         chatAdapter.submitList(chatMessages.toList())
         binding.rvW2GChat.scrollToPosition(chatMessages.size - 1)
 
+        val user = authManager.getUserProfile() ?: UserProfile(
+            id = authManager.userId ?: "guest",
+            name = authManager.userName ?: "Tamu",
+            picture = authManager.userAvatar
+        )
+
         lifecycleScope.launch {
             try {
-                ApiClient.community.sendW2GChat(
-                    W2GChatRequest(
-                        roomId = roomId,
-                        text = text,
-                        videoTime = currentSec
-                    )
-                )
+                com.ndikanime.app.data.upstash.UpstashRepository.sendW2GChat(roomId, user, text, currentSec)
             } catch (e: Exception) {
                 Toast.makeText(this@W2GRoomActivity, "Gagal mengirim komentar", Toast.LENGTH_SHORT).show()
             }
@@ -305,10 +304,11 @@ class W2GRoomActivity : AppCompatActivity() {
         super.onDestroy()
         heartbeatJob?.cancel()
         val currentRoomId = roomId
+        val currentUserId = authManager.userId ?: "guest"
         if (currentRoomId.isNotBlank()) {
             kotlinx.coroutines.GlobalScope.launch {
                 try {
-                    ApiClient.community.leaveW2G(mapOf("roomId" to currentRoomId))
+                    com.ndikanime.app.data.upstash.UpstashRepository.leaveW2G(currentRoomId, currentUserId)
                 } catch (e: Exception) {}
             }
         }

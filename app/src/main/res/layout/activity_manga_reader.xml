@@ -45,6 +45,14 @@
             android:textSize="15sp"
             android:textStyle="bold" />
 
+        <ImageButton
+            android:id="@+id/btnCommentReader"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_community"
+            app:tint="@color/white" />
+
     </LinearLayout>
 
     <!-- Bottom Bar Overlay -->

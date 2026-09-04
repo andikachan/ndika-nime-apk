@@ -164,6 +164,15 @@
                     android:src="@drawable/ic_bookmark"
                     app:tint="@color/accent_gold" />
 
+                <ImageButton
+                    android:id="@+id/btnCommentManga"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_search_input"
+                    android:src="@drawable/ic_community"
+                    app:tint="@color/accent_gold" />
+
             </LinearLayout>
 
             <!-- Synopsis -->
