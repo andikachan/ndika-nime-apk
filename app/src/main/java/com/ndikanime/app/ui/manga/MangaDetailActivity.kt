@@ -133,7 +133,7 @@ class MangaDetailActivity : AppCompatActivity() {
         val chSlug = chapter.slug ?: return
         val intent = Intent(this, MangaReaderActivity::class.java).apply {
             putExtra("chapter_slug", chSlug)
-            putExtra("chapter_title", chapter.title ?: "Chapter")
+            putExtra("chapter_title", chapter.getDisplayTitle())
             putExtra("manga_slug", mangaSlug)
             putExtra("manga_title", mangaTitle)
             putExtra("manga_cover", mangaCover)

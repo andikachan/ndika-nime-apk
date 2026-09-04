@@ -37,7 +37,7 @@ class GenreAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: GenreItem) {
-            binding.tvGenreName.text = item.title ?: ""
+            binding.tvGenreName.text = item.getDisplayName()
 
             val isSelected = (item.id == selectedId)
             if (isSelected) {

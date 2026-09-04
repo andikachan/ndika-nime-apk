@@ -33,8 +33,8 @@ class ChapterAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: MangaChapterItem) {
-            binding.tvChapterTitle.text = item.title ?: "Chapter"
-            binding.tvChapterDate.text = item.time ?: item.date ?: ""
+            binding.tvChapterTitle.text = item.getDisplayTitle()
+            binding.tvChapterDate.text = item.getDisplayDate()
 
             binding.root.setOnClickListener {
                 onChapterClick(item)

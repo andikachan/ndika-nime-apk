@@ -126,6 +126,10 @@ data class GenreListResponse(
 
 data class GenreItem(
     @SerializedName("id") val id: String? = null,
+    @SerializedName("name") val name: String? = null,
     @SerializedName("title") val title: String? = null,
+    @SerializedName("group") val group: String? = null,
     @SerializedName("total") val total: String? = null
-)
+) {
+    fun getDisplayName(): String = name ?: title ?: ""
+}

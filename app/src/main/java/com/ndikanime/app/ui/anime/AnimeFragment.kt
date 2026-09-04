@@ -14,8 +14,10 @@ import com.google.android.material.tabs.TabLayout
 import com.ndikanime.app.R
 import com.ndikanime.app.data.api.ApiClient
 import com.ndikanime.app.data.model.AnimeItem
+import com.ndikanime.app.data.storage.AuthManager
 import com.ndikanime.app.databinding.FragmentAnimeBinding
 import com.ndikanime.app.ui.MainActivity
+import com.ndikanime.app.ui.profile.ProfileActivity
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -25,6 +27,7 @@ class AnimeFragment : Fragment() {
     private var _binding: FragmentAnimeBinding? = null
     private val binding get() = _binding!!
 
+    private val authManager by lazy { AuthManager(requireContext()) }
     private val ongoingAdapter by lazy { AnimeCardAdapter { openDetail(it) } }
     private val popularAdapter by lazy { AnimeCardAdapter { openDetail(it) } }
     private val newAdapter by lazy { AnimeCardAdapter { openDetail(it) } }
@@ -89,6 +92,14 @@ class AnimeFragment : Fragment() {
             (activity as? MainActivity)?.navigateToExplore(false)
         }
 
+        binding.btnProfileTop.setOnClickListener {
+            if (authManager.isLoggedIn) {
+                startActivity(Intent(requireContext(), ProfileActivity::class.java))
+            } else {
+                (activity as? MainActivity)?.navigateToCommunity()
+            }
+        }
+
         binding.btnSeeAllOngoing.setOnClickListener {
             openAnimeList("ongoing", "Anime Ongoing")
         }
@@ -97,6 +108,21 @@ class AnimeFragment : Fragment() {
         }
         binding.btnSeeAllNew.setOnClickListener {
             openAnimeList("new", "Anime Rilis Terbaru")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateProfileAvatar()
+    }
+
+    private fun updateProfileAvatar() {
+        val avatar = authManager.userAvatar
+        if (!avatar.isNullOrBlank()) {
+            val url = if (avatar.startsWith("/")) "https://ndichan.xyz$avatar" else avatar
+            binding.btnProfileTop.load(url) { crossfade(true) }
+        } else {
+            binding.btnProfileTop.setImageResource(R.drawable.kaguya)
         }
     }
 

@@ -30,7 +30,10 @@ data class MangaItem(
         if (chapters is List<*> && chapters.isNotEmpty()) {
             val first = chapters[0]
             if (first is Map<*, *>) {
-                return first["title"]?.toString()
+                val num = first["chapterNum"]?.toString() ?: first["chapter"]?.toString() ?: first["title"]?.toString()
+                if (!num.isNullOrBlank()) {
+                    return if (num.startsWith("Ch", ignoreCase = true) || num.startsWith("Chapter", ignoreCase = true)) num else "Ch. $num"
+                }
             }
         }
         return badge
@@ -76,10 +79,25 @@ data class MangaDetail(
 @Parcelize
 data class MangaChapterItem(
     @SerializedName("title") val title: String? = null,
+    @SerializedName("chapterNum") val chapterNum: String? = null,
+    @SerializedName("chapter") val chapter: String? = null,
     @SerializedName("slug") val slug: String? = null,
     @SerializedName("time") val time: String? = null,
     @SerializedName("date") val date: String? = null
-) : Parcelable
+) : Parcelable {
+    fun getDisplayTitle(): String {
+        val num = chapterNum ?: chapter
+        return when {
+            !num.isNullOrBlank() -> if (num.startsWith("Ch", ignoreCase = true) || num.startsWith("Chapter", ignoreCase = true)) num else "Chapter $num"
+            !title.isNullOrBlank() -> title
+            else -> "Chapter"
+        }
+    }
+
+    fun getDisplayDate(): String {
+        return time ?: date ?: ""
+    }
+}
 
 data class MangaReadResponse(
     @SerializedName("status") val status: Boolean? = null,

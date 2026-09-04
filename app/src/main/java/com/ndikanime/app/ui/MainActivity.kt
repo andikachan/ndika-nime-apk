@@ -63,4 +63,8 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigation.selectedItemId = R.id.menu_explore
         exploreFragment.setType(isManga)
     }
+
+    fun navigateToCommunity() {
+        binding.bottomNavigation.selectedItemId = R.id.menu_community
+    }
 }

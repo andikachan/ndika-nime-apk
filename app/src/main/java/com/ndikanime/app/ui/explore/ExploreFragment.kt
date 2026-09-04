@@ -114,12 +114,14 @@ class ExploreFragment : Fragment() {
         binding.tabType.getTabAt(if (isManga) 1 else 0)?.select()
     }
 
+    private var currentGenres: List<GenreItem> = emptyList()
+
     private fun loadGenres() {
         lifecycleScope.launch {
             try {
                 val res = ApiClient.service.getGenres()
-                val list = res.data ?: emptyList()
-                genreAdapter.submitList(list, selectedGenreId)
+                currentGenres = res.data ?: emptyList()
+                genreAdapter.submitList(currentGenres, selectedGenreId)
             } catch (e: Exception) {
                 // ignore
             }
@@ -128,8 +130,7 @@ class ExploreFragment : Fragment() {
 
     private fun onGenreSelected(genre: GenreItem) {
         selectedGenreId = if (selectedGenreId == genre.id) null else genre.id
-        genreAdapter.submitList(genreAdapter.itemCount.let { emptyList() }) // refresh
-        loadGenres()
+        genreAdapter.submitList(currentGenres, selectedGenreId)
 
         if (selectedGenreId != null) {
             filterByGenre(selectedGenreId!!)

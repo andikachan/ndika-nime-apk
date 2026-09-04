@@ -10,11 +10,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.load
 import com.ndikanime.app.R
 import com.ndikanime.app.data.api.ApiClient
 import com.ndikanime.app.data.model.MangaItem
+import com.ndikanime.app.data.storage.AuthManager
 import com.ndikanime.app.databinding.FragmentMangaBinding
 import com.ndikanime.app.ui.MainActivity
+import com.ndikanime.app.ui.profile.ProfileActivity
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
@@ -22,6 +25,8 @@ class MangaFragment : Fragment() {
 
     private var _binding: FragmentMangaBinding? = null
     private val binding get() = _binding!!
+
+    private val authManager by lazy { AuthManager(requireContext()) }
 
     private val popularAdapter by lazy {
         MangaCardAdapter { openDetail(it) }
@@ -60,6 +65,29 @@ class MangaFragment : Fragment() {
 
         binding.btnSearchManga.setOnClickListener {
             (activity as? MainActivity)?.navigateToExplore(true)
+        }
+
+        binding.btnProfileTopManga.setOnClickListener {
+            if (authManager.isLoggedIn) {
+                startActivity(Intent(requireContext(), ProfileActivity::class.java))
+            } else {
+                (activity as? MainActivity)?.navigateToCommunity()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateProfileAvatar()
+    }
+
+    private fun updateProfileAvatar() {
+        val avatar = authManager.userAvatar
+        if (!avatar.isNullOrBlank()) {
+            val url = if (avatar.startsWith("/")) "https://ndichan.xyz$avatar" else avatar
+            binding.btnProfileTopManga.load(url) { crossfade(true) }
+        } else {
+            binding.btnProfileTopManga.setImageResource(R.drawable.kaguya)
         }
     }
 

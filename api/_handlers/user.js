@@ -595,7 +595,7 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') {
       return res.status(200).end();
@@ -617,7 +617,7 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
         }
       }
 
-      const { picture, banner, bannerPosition, name, title, customTitle, frame, aura, themeSong } = body || {};
+      const { picture, banner, bannerPosition, name, bio, title, customTitle, frame, aura, themeSong } = body || {};
 
       // Setidaknya satu field harus dikirim
       if (
@@ -625,6 +625,7 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
         banner === undefined &&
         bannerPosition === undefined &&
         name === undefined &&
+        bio === undefined &&
         title === undefined &&
         customTitle === undefined &&
         frame === undefined &&
@@ -685,6 +686,11 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
         }
         updates.name = trimmedName;
         updates.hasCustomName = true; // tandai supaya login Google berikutnya tidak menimpa nama ini
+      }
+
+      // ===== Validasi & siapkan update bio =====
+      if (bio !== undefined) {
+        updates.bio = typeof bio === 'string' ? bio.trim().slice(0, 300) : '';
       }
 
       // ===== Validasi & siapkan update title aktif (KUSTOMISASI PROFIL) =====

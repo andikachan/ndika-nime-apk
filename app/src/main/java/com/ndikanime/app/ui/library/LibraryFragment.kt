@@ -8,9 +8,11 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import com.ndikanime.app.data.model.HistoryItem
 import com.ndikanime.app.data.storage.HistoryStorage
+import kotlinx.coroutines.launch
 import com.ndikanime.app.databinding.FragmentLibraryBinding
 import com.ndikanime.app.ui.anime.AnimeDetailActivity
 import com.ndikanime.app.ui.manga.MangaDetailActivity
@@ -45,6 +47,11 @@ class LibraryFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         loadCurrentTab()
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (historyStorage.syncRemoteHistory()) {
+                loadCurrentTab()
+            }
+        }
     }
 
     private fun setupViews() {

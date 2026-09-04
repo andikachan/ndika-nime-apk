@@ -1,4 +1,4 @@
-import { getJwtSecret } from '../_lib/auth.js';
+import { getJwtSecret, verifyToken } from '../_lib/auth.js';
 import redis from '../_lib/redis.js';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
@@ -16,27 +16,11 @@ const safeParse = (item) => {
   }
 };
 
-const verifyToken = (req) => {
-  const cookies = cookie.parse(req.headers.cookie || '');
-  const token = cookies.token;
-
-  if (!token) {
-    throw new Error('No token');
-  }
-
-  const decoded = jwt.verify(
-    token,
-    getJwtSecret()
-  );
-
-  return decoded.userId;
-};
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();

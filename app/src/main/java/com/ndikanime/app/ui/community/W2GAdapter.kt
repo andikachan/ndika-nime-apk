@@ -1,8 +1,11 @@
 package com.ndikanime.app.ui.community
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
+import com.ndikanime.app.R
 import com.ndikanime.app.data.model.W2GRoom
 import com.ndikanime.app.databinding.ItemW2gRoomBinding
 
@@ -33,11 +36,25 @@ class W2GAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: W2GRoom) {
-            binding.tvRoomAnime.text = item.animeTitle ?: "Nonton Bareng"
-            binding.tvRoomEpisode.text = item.episodeTitle ?: "Episode Live"
-            binding.tvRoomHost.text = "Host: ${item.hostName ?: "Admin"} • ${item.membersCount ?: 1} Penonton"
+            binding.tvRoomTitle.text = item.title ?: "Room Nonton Bareng"
+            binding.tvRoomAnime.text = item.animeTitle ?: "Video Bersama"
+            binding.tvRoomEpisode.text = "Episode ${item.episodeIndex ?: "1"}"
+            binding.tvRoomHost.text = "Host: ${item.hostName ?: "User"} • ${item.activeCount} Penonton"
+            binding.ivRoomLock.visibility = if (item.hasPasscode) View.VISIBLE else View.GONE
+
+            val posterUrl = item.getDisplayPoster()
+            if (posterUrl.isNotBlank()) {
+                binding.ivRoomPoster.load(posterUrl) {
+                    crossfade(true)
+                }
+            } else {
+                binding.ivRoomPoster.setImageResource(R.drawable.nefora_logo)
+            }
 
             binding.btnJoinRoom.setOnClickListener {
+                onJoinClick(item)
+            }
+            binding.root.setOnClickListener {
                 onJoinClick(item)
             }
         }

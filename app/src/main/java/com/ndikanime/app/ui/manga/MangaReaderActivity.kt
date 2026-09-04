@@ -99,7 +99,8 @@ class MangaReaderActivity : AppCompatActivity() {
                         slug = mangaSlug.ifBlank { data.slugManga ?: slug },
                         title = mangaTitle.ifBlank { data.title ?: "Manga" },
                         cover = mangaCover.ifBlank { data.cover ?: "" },
-                        chapterTitle = chapterTitle
+                        chapterTitle = chapterTitle,
+                        chapterSlug = chapterSlug
                     )
                 } else {
                     Toast.makeText(this@MangaReaderActivity, "Gambar komik tidak ditemukan", Toast.LENGTH_SHORT).show()
@@ -121,7 +122,7 @@ class MangaReaderActivity : AppCompatActivity() {
         if (targetIndex in otherChapters.indices) {
             val target = otherChapters[targetIndex]
             chapterSlug = target.slug ?: return
-            chapterTitle = target.title ?: "Chapter"
+            chapterTitle = target.getDisplayTitle()
             loadChapter(chapterSlug)
         } else {
             val msg = if (isNext) "Ini adalah chapter terakhir" else "Ini adalah chapter pertama"

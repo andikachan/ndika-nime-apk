@@ -197,7 +197,10 @@ class WatchActivity : AppCompatActivity() {
         }
     }
 
+    private var currentEpisodeIndex: String? = null
+
     private fun bindEpisodeData(data: EpisodeDetailData) {
+        currentEpisodeIndex = data.episode?.index
         val servers = (data.server ?: emptyList()).filter { s ->
             !s.link.isNullOrBlank() && !s.quality.isNullOrBlank() && s.type == "direct"
         }
@@ -249,14 +252,10 @@ class WatchActivity : AppCompatActivity() {
 
     private fun playNextEpisode() {
         val nextId = nextEpisodeId ?: return
-        val nextTitle = nextEpisodeTitle ?: "Next Episode"
+        episodeTitle = nextEpisodeTitle ?: "Episode Berikutnya"
         episodeId = nextId
-        episodeTitle = nextTitle
-
-        val tvTitle = binding.playerView.findViewById<TextView>(R.id.tvPlayerTitle)
-        tvTitle?.text = if (animeTitle.isNotBlank()) "$animeTitle - $episodeTitle" else episodeTitle
-
-        loadEpisode(nextId)
+        binding.tvWatchEpisodeTitle.text = episodeTitle
+        loadEpisode(episodeId)
     }
 
     private fun saveProgress() {
@@ -267,6 +266,7 @@ class WatchActivity : AppCompatActivity() {
                 title = animeTitle,
                 cover = animePoster,
                 episodeTitle = episodeTitle,
+                episodeIndex = currentEpisodeIndex,
                 progressMs = pos
             )
         }

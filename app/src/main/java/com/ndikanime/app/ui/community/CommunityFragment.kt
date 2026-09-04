@@ -1,26 +1,31 @@
 package com.ndikanime.app.ui.community
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.tabs.TabLayout
 import com.ndikanime.app.R
 import com.ndikanime.app.data.api.ApiClient
-import com.ndikanime.app.data.model.LoginRequest
-import com.ndikanime.app.data.model.RegisterRequest
-import com.ndikanime.app.data.model.SendChatRequest
+import com.ndikanime.app.data.model.*
 import com.ndikanime.app.data.storage.AuthManager
 import com.ndikanime.app.databinding.FragmentCommunityBinding
+import com.ndikanime.app.ui.profile.ProfileActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -35,7 +40,11 @@ class CommunityFragment : Fragment() {
 
     private val chatAdapter by lazy { ChatAdapter() }
     private val leaderboardAdapter by lazy { LeaderboardAdapter { /* user profile */ } }
-    private val w2gAdapter by lazy { W2GAdapter { Toast.makeText(context, "Bergabung ke room ${it.animeTitle}", Toast.LENGTH_SHORT).show() } }
+    private val w2gAdapter by lazy {
+        W2GAdapter { room ->
+            joinW2GRoom(room)
+        }
+    }
 
     private var currentTab = 0 // 0 = Chat, 1 = Leaderboard, 2 = W2G
     private var chatPollingJob: Job? = null
@@ -52,6 +61,14 @@ class CommunityFragment : Fragment() {
         setupViews()
         updateAuthButton()
         loadTab(currentTab)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateAuthButton()
+        if (currentTab == 2) {
+            loadW2GRooms()
+        }
     }
 
     private fun setupViews() {
@@ -73,7 +90,8 @@ class CommunityFragment : Fragment() {
 
         binding.btnAccount.setOnClickListener {
             if (authManager.isLoggedIn) {
-                showAccountMenu()
+                val intent = Intent(requireContext(), ProfileActivity::class.java)
+                startActivity(intent)
             } else {
                 showAuthDialog()
             }
@@ -81,6 +99,10 @@ class CommunityFragment : Fragment() {
 
         binding.btnSendChat.setOnClickListener {
             sendChat()
+        }
+
+        binding.btnCreateW2G.setOnClickListener {
+            showCreateW2GRoomDialog()
         }
     }
 
@@ -95,6 +117,7 @@ class CommunityFragment : Fragment() {
     private fun loadTab(tabIndex: Int) {
         chatPollingJob?.cancel()
         binding.tvEmptyCommunity.visibility = View.GONE
+        binding.btnCreateW2G.visibility = if (tabIndex == 2) View.VISIBLE else View.GONE
 
         when (tabIndex) {
             0 -> {
@@ -206,17 +229,178 @@ class CommunityFragment : Fragment() {
         }
     }
 
-    private fun showAccountMenu() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Akun Saya")
-            .setMessage("Login sebagai: ${authManager.userName}")
-            .setPositiveButton("Logout") { _, _ ->
-                authManager.logout()
-                updateAuthButton()
-                Toast.makeText(context, "Berhasil keluar", Toast.LENGTH_SHORT).show()
+    private fun joinW2GRoom(room: W2GRoom) {
+        val roomId = room.getEffectiveId()
+        if (roomId.isBlank()) return
+
+        if (room.hasPasscode) {
+            val input = EditText(requireContext()).apply {
+                hint = "Masukkan passcode..."
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                setPadding(40, 30, 40, 30)
             }
-            .setNegativeButton("Tutup", null)
-            .show()
+            AlertDialog.Builder(requireContext())
+                .setTitle("Passcode Room")
+                .setMessage("Room ini dilindungi dengan passcode:")
+                .setView(input)
+                .setPositiveButton("Masuk") { _, _ ->
+                    val code = input.text.toString().trim()
+                    launchW2GRoom(roomId, code)
+                }
+                .setNegativeButton("Batal", null)
+                .show()
+        } else {
+            launchW2GRoom(roomId, "")
+        }
+    }
+
+    private fun launchW2GRoom(roomId: String, passcode: String) {
+        val intent = Intent(requireContext(), W2GRoomActivity::class.java).apply {
+            putExtra("room_id", roomId)
+            putExtra("passcode", passcode)
+        }
+        startActivity(intent)
+    }
+
+    private fun showCreateW2GRoomDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_w2g, null)
+        val etTitle = dialogView.findViewById<EditText>(R.id.etCreateRoomTitle)
+        val etSearch = dialogView.findViewById<EditText>(R.id.etSearchAnimeW2G)
+        val btnSearch = dialogView.findViewById<MaterialButton>(R.id.btnSearchAnimeW2G)
+        val rvResults = dialogView.findViewById<RecyclerView>(R.id.rvAnimeSearchResults)
+        val layoutSelected = dialogView.findViewById<View>(R.id.layoutSelectedAnime)
+        val ivPoster = dialogView.findViewById<ImageView>(R.id.ivSelectedAnimePoster)
+        val tvSelectedTitle = dialogView.findViewById<TextView>(R.id.tvSelectedAnimeTitle)
+        val tvEpCount = dialogView.findViewById<TextView>(R.id.tvSelectedAnimeEpisodesCount)
+        val spEpisode = dialogView.findViewById<Spinner>(R.id.spEpisodeW2G)
+        val etPasscode = dialogView.findViewById<EditText>(R.id.etCreateRoomPasscode)
+        val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnCancelCreateRoom)
+        val btnSubmit = dialogView.findViewById<MaterialButton>(R.id.btnSubmitCreateRoom)
+        val pbCreate = dialogView.findViewById<ProgressBar>(R.id.pbCreateRoom)
+
+        var selectedAnime: AnimeItem? = null
+        var episodeList: List<EpisodeItem> = emptyList()
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        val pickerAdapter = SearchAnimePickerAdapter { anime ->
+            selectedAnime = anime
+            tvSelectedTitle.text = anime.title ?: "Anime"
+            val poster = anime.imagePoster ?: anime.imageCover ?: anime.cover ?: ""
+            if (poster.isNotBlank()) {
+                val url = if (poster.startsWith("http")) {
+                    "https://cfelainawanggy.pages.dev/?action=proxy&url=" + java.net.URLEncoder.encode(poster, "UTF-8")
+                } else poster
+                ivPoster.load(url) { crossfade(true) }
+            }
+            layoutSelected.visibility = View.VISIBLE
+            rvResults.visibility = View.GONE
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val res = ApiClient.service.getAnimeDetail(anime.id ?: "")
+                    episodeList = res.data?.episodeList ?: emptyList()
+                    tvEpCount.text = "${episodeList.size} Episode Tersedia"
+
+                    val episodeTitles = episodeList.map { it.title ?: "Episode ${it.index ?: ""}" }
+                    val spinnerAdapter = ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        episodeTitles
+                    )
+                    spEpisode.adapter = spinnerAdapter
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Gagal memuat episode anime", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        rvResults.layoutManager = LinearLayoutManager(requireContext())
+        rvResults.adapter = pickerAdapter
+
+        btnSearch.setOnClickListener {
+            val q = etSearch.text.toString().trim()
+            if (q.length < 2) return@setOnClickListener
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val res = ApiClient.service.searchAnime(q, 0)
+                    val list = res.data ?: emptyList()
+                    pickerAdapter.submitList(list)
+                    rvResults.visibility = if (list.isNotEmpty()) View.VISIBLE else View.GONE
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Gagal mencari anime", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+
+        btnSubmit.setOnClickListener {
+            val title = etTitle.text.toString().trim()
+            if (title.isBlank()) {
+                Toast.makeText(context, "Nama room tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (selectedAnime == null || episodeList.isEmpty()) {
+                Toast.makeText(context, "Pilih anime dan episode terlebih dahulu", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val selectedEpIndex = spEpisode.selectedItemPosition.coerceAtLeast(0)
+            val selectedEpisode = episodeList.getOrNull(selectedEpIndex) ?: episodeList.first()
+
+            pbCreate.visibility = View.VISIBLE
+            btnSubmit.isEnabled = false
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    var videoUrl = ""
+                    try {
+                        val epDetail = ApiClient.service.getEpisodeDetail(selectedEpisode.id ?: "")
+                        val servers = (epDetail.data?.server ?: emptyList()).filter { s ->
+                            !s.link.isNullOrBlank() && s.type == "direct"
+                        }
+                        val best = servers.find { it.quality == "720p" } ?: servers.firstOrNull()
+                        if (best?.link != null) {
+                            videoUrl = "https://cfelainawanggy.pages.dev/?action=stream&url=${best.link}"
+                        }
+                    } catch (e: Exception) {}
+
+                    val passcode = etPasscode.text.toString().trim()
+                    val req = CreateW2GRoomRequest(
+                        title = title,
+                        animeId = selectedAnime?.id,
+                        animeTitle = selectedAnime?.title,
+                        animePoster = selectedAnime?.imagePoster ?: selectedAnime?.imageCover ?: selectedAnime?.cover,
+                        episodeIndex = selectedEpisode.index ?: "1",
+                        episodeId = selectedEpisode.id,
+                        videoUrl = videoUrl,
+                        passcode = passcode,
+                        isPublic = passcode.isEmpty()
+                    )
+
+                    val createRes = ApiClient.community.createW2GRoom(req)
+                    if (createRes.success && (!createRes.roomId.isNullOrBlank() || createRes.room != null)) {
+                        val newRoomId = createRes.roomId ?: createRes.room?.id ?: ""
+                        dialog.dismiss()
+                        Toast.makeText(context, "Room berhasil dibuat!", Toast.LENGTH_SHORT).show()
+                        loadW2GRooms()
+                        launchW2GRoom(newRoomId, passcode)
+                    } else {
+                        Toast.makeText(context, createRes.error ?: "Gagal membuat room", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    pbCreate.visibility = View.GONE
+                    btnSubmit.isEnabled = true
+                }
+            }
+        }
+
+        dialog.show()
     }
 
     private fun showAuthDialog() {

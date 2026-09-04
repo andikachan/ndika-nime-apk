@@ -103,6 +103,20 @@
             android:textSize="13sp"
             android:visibility="gone" />
 
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/btnCreateW2G"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/accent_gold"
+            android:text="Buat Room"
+            android:textColor="@color/bg_dark"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:icon="@drawable/ic_play"
+            app:iconTint="@color/bg_dark" />
+
     </FrameLayout>
 
     <!-- Chat Input Section (Shown only in Chat Tab) -->
