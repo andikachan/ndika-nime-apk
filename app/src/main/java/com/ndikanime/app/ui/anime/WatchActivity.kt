@@ -69,7 +69,6 @@ class WatchActivity : AppCompatActivity() {
         animeTitle = intent.getStringExtra("anime_title") ?: ""
         animePoster = intent.getStringExtra("anime_poster") ?: ""
 
-        setupViews()
         initPlayer()
         setupCustomControls()
         setupHoldToSpeed()
