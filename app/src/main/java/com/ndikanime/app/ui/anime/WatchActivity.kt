@@ -1,12 +1,8 @@
 package com.ndikanime.app.ui.anime
 
-import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
@@ -18,15 +14,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import com.ndikanime.app.R
 import com.ndikanime.app.data.api.ApiClient
 import com.ndikanime.app.data.model.EpisodeDetailData
 import com.ndikanime.app.data.model.ServerItem
-import com.ndikanime.app.data.storage.HistoryStorage
-import com.ndikanime.app.databinding.ActivityWatchBinding
 import com.ndikanime.app.data.storage.AuthManager
+import com.ndikanime.app.data.storage.HistoryStorage
 import com.ndikanime.app.data.upstash.UpstashRepository
+import com.ndikanime.app.databinding.ActivityWatchBinding
 import com.ndikanime.app.ui.community.CommentsBottomSheet
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -53,8 +50,6 @@ class WatchActivity : AppCompatActivity() {
     private var nextEpisodeTitle: String? = null
 
     private var currentSpeed: Float = 1.0f
-    private var isHoldingSpeed: Boolean = false
-    private val holdHandler = Handler(Looper.getMainLooper())
     private var isFullscreen: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,36 +66,48 @@ class WatchActivity : AppCompatActivity() {
 
         initPlayer()
         setupCustomControls()
-        setupHoldToSpeed()
 
         loadEpisode(episodeId)
     }
 
     private fun initPlayer() {
-        exoPlayer = ExoPlayer.Builder(this).build().apply {
-            playWhenReady = true
-            addListener(object : Player.Listener {
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (isPlaying) {
-                        startWatchTimeTracker()
-                    } else {
-                        stopWatchTimeTracker()
-                    }
-                }
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                15000, // minBufferMs
+                50000, // maxBufferMs
+                1500,  // bufferForPlaybackMs
+                3000   // bufferForPlaybackAfterRebufferMs
+            )
+            .build()
 
-                override fun onPlaybackStateChanged(state: Int) {
-                    when (state) {
-                        Player.STATE_BUFFERING -> binding.pbWatchLoading.visibility = View.VISIBLE
-                        Player.STATE_READY -> binding.pbWatchLoading.visibility = View.GONE
-                        Player.STATE_ENDED -> {
-                            binding.pbWatchLoading.visibility = View.GONE
-                            playNextEpisode()
+        exoPlayer = ExoPlayer.Builder(this)
+            .setLoadControl(loadControl)
+            .setSeekForwardIncrementMs(10000)
+            .setSeekBackIncrementMs(10000)
+            .build().apply {
+                playWhenReady = true
+                addListener(object : Player.Listener {
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        if (isPlaying) {
+                            startWatchTimeTracker()
+                        } else {
+                            stopWatchTimeTracker()
                         }
-                        Player.STATE_IDLE -> {}
                     }
-                }
-            })
-        }
+
+                    override fun onPlaybackStateChanged(state: Int) {
+                        when (state) {
+                            Player.STATE_BUFFERING -> binding.pbWatchLoading.visibility = View.VISIBLE
+                            Player.STATE_READY -> binding.pbWatchLoading.visibility = View.GONE
+                            Player.STATE_ENDED -> {
+                                binding.pbWatchLoading.visibility = View.GONE
+                                playNextEpisode()
+                            }
+                            Player.STATE_IDLE -> {}
+                        }
+                    }
+                })
+            }
         binding.playerView.player = exoPlayer
     }
 
@@ -128,15 +135,11 @@ class WatchActivity : AppCompatActivity() {
         }
 
         btnRewind?.setOnClickListener {
-            exoPlayer?.let { p ->
-                p.seekTo(maxOf(0L, p.currentPosition - 10000L))
-            }
+            exoPlayer?.seekBack()
         }
 
         btnForward?.setOnClickListener {
-            exoPlayer?.let { p ->
-                p.seekTo(minOf(p.duration, p.currentPosition + 10000L))
-            }
+            exoPlayer?.seekForward()
         }
 
         btnQuality?.setOnClickListener {
@@ -174,34 +177,6 @@ class WatchActivity : AppCompatActivity() {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             btnFullscreen?.setImageResource(R.drawable.ic_fullscreen_exit)
             isFullscreen = true
-        }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setupHoldToSpeed() {
-        val holdRunnable = Runnable {
-            if (exoPlayer?.isPlaying == true) {
-                isHoldingSpeed = true
-                exoPlayer?.playbackParameters = PlaybackParameters(2.0f)
-                binding.tvSpeedIndicator.visibility = View.VISIBLE
-            }
-        }
-
-        binding.playerView.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    holdHandler.postDelayed(holdRunnable, 450)
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    holdHandler.removeCallbacks(holdRunnable)
-                    if (isHoldingSpeed) {
-                        isHoldingSpeed = false
-                        exoPlayer?.playbackParameters = PlaybackParameters(currentSpeed)
-                        binding.tvSpeedIndicator.visibility = View.GONE
-                    }
-                }
-            }
-            false
         }
     }
 
@@ -281,7 +256,7 @@ class WatchActivity : AppCompatActivity() {
         val nextId = nextEpisodeId ?: return
         episodeTitle = nextEpisodeTitle ?: "Episode Berikutnya"
         episodeId = nextId
-        binding.playerView.findViewById<android.widget.TextView>(R.id.tvPlayerTitle)?.text =
+        binding.playerView.findViewById<TextView>(R.id.tvPlayerTitle)?.text =
             "$animeTitle - $episodeTitle"
         loadEpisode(episodeId)
     }
@@ -308,7 +283,7 @@ class WatchActivity : AppCompatActivity() {
                             }
                             Toast.makeText(
                                 this@WatchActivity,
-                                "🎉 Level Up! Kamu sekarang Level ${result.newLevel} (${result.newTitle})! +${result.coinsEarned} Koin",
+                                "Level Up! Kamu sekarang Level ${result.newLevel} (${result.newTitle})! +${result.coinsEarned} Koin",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
