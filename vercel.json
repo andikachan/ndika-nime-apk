@@ -1,0 +1,39 @@
+{
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/index.js?_path=sitemap"
+    },
+    {
+      "source": "/api/v1/:path*",
+      "destination": "/api/index.js?_path=:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.js?_path=:path*"
+    },
+    {
+      "source": "/googleddc4350a8c97882a.html",
+      "destination": "/googleddc4350a8c97882a.html"
+    },
+    {
+      "source": "/ndikagantengtobrutbanget/:path*",
+      "destination": "https://api.ndikacunk.my.id/:path*"
+    },
+    {
+      "source": "/(.*\\.mp4)",
+      "has": [
+        {
+          "type": "query",
+          "key": "url",
+          "value": "(?<url>.*)"
+        }
+      ],
+      "destination": "https://cfelainawanggy.pages.dev/?action=proxy&url=:url"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

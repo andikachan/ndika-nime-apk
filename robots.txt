@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /sitemap.xml
+Allow: /api/v1/user/sitemap
+Disallow: /admin
+Disallow: /api/
+Disallow: /messages
+Disallow: /profile
+Disallow: /history
+Disallow: /clan
+Disallow: /chat
+Disallow: /*?*type=user
+
+User-agent: Googlebot
+Allow: /
+Allow: /sitemap.xml
+Allow: /api/v1/user/sitemap
+Disallow: /admin
+Disallow: /api/
+Disallow: /messages
+Disallow: /profile
+Disallow: /history
+
+Sitemap: https://ndichan.xyz/sitemap.xml

@@ -1,0 +1,287 @@
+package com.ndikanime.app.ui.anime
+
+import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
+import android.net.Uri
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import com.ndikanime.app.R
+import com.ndikanime.app.data.api.ApiClient
+import com.ndikanime.app.data.model.EpisodeDetailData
+import com.ndikanime.app.data.model.ServerItem
+import com.ndikanime.app.data.storage.HistoryStorage
+import com.ndikanime.app.databinding.ActivityWatchBinding
+import kotlinx.coroutines.launch
+
+class WatchActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityWatchBinding
+    private var exoPlayer: ExoPlayer? = null
+    private val historyStorage by lazy { HistoryStorage(this) }
+
+    private var episodeId: String = ""
+    private var episodeTitle: String = ""
+    private var animeId: String = ""
+    private var animeTitle: String = ""
+    private var animePoster: String = ""
+
+    private var currentServers: List<ServerItem> = emptyList()
+    private var selectedServer: ServerItem? = null
+    private var nextEpisodeId: String? = null
+    private var nextEpisodeTitle: String? = null
+
+    private var currentSpeed: Float = 1.0f
+    private var isHoldingSpeed: Boolean = false
+    private val holdHandler = Handler(Looper.getMainLooper())
+    private var isFullscreen: Boolean = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        binding = ActivityWatchBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        episodeId = intent.getStringExtra("episode_id") ?: ""
+        episodeTitle = intent.getStringExtra("episode_title") ?: ""
+        animeId = intent.getStringExtra("anime_id") ?: ""
+        animeTitle = intent.getStringExtra("anime_title") ?: ""
+        animePoster = intent.getStringExtra("anime_poster") ?: ""
+
+        initPlayer()
+        setupCustomControls()
+        setupHoldToSpeed()
+        loadEpisode(episodeId)
+    }
+
+    private fun initPlayer() {
+        exoPlayer = ExoPlayer.Builder(this).build().apply {
+            playWhenReady = true
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(state: Int) {
+                    when (state) {
+                        Player.STATE_BUFFERING -> binding.pbWatchLoading.visibility = View.VISIBLE
+                        Player.STATE_READY -> binding.pbWatchLoading.visibility = View.GONE
+                        Player.STATE_ENDED -> {
+                            binding.pbWatchLoading.visibility = View.GONE
+                            playNextEpisode()
+                        }
+                        Player.STATE_IDLE -> {}
+                    }
+                }
+            })
+        }
+        binding.playerView.player = exoPlayer
+    }
+
+    private fun setupCustomControls() {
+        val btnBack = binding.playerView.findViewById<ImageButton>(R.id.btnBackPlayer)
+        val tvTitle = binding.playerView.findViewById<TextView>(R.id.tvPlayerTitle)
+        val btnQuality = binding.playerView.findViewById<TextView>(R.id.btnQuality)
+        val btnSpeed = binding.playerView.findViewById<TextView>(R.id.btnSpeed)
+        val btnRewind = binding.playerView.findViewById<ImageButton>(R.id.btnRewind)
+        val btnForward = binding.playerView.findViewById<ImageButton>(R.id.btnForward)
+        val btnFullscreen = binding.playerView.findViewById<ImageButton>(R.id.btnFullscreen)
+        val btnEpisodeList = binding.playerView.findViewById<ImageButton>(R.id.btnEpisodeList)
+
+        btnBack?.setOnClickListener { finish() }
+        tvTitle?.text = if (animeTitle.isNotBlank()) "$animeTitle - $episodeTitle" else episodeTitle
+
+        btnRewind?.setOnClickListener {
+            exoPlayer?.let { p ->
+                p.seekTo(maxOf(0L, p.currentPosition - 10000L))
+            }
+        }
+
+        btnForward?.setOnClickListener {
+            exoPlayer?.let { p ->
+                p.seekTo(minOf(p.duration, p.currentPosition + 10000L))
+            }
+        }
+
+        btnQuality?.setOnClickListener {
+            showQualityDialog()
+        }
+
+        val speeds = listOf(1.0f, 1.25f, 1.5f, 2.0f, 0.75f)
+        btnSpeed?.setOnClickListener {
+            val nextIndex = (speeds.indexOf(currentSpeed) + 1) % speeds.size
+            currentSpeed = speeds[nextIndex]
+            exoPlayer?.playbackParameters = PlaybackParameters(currentSpeed)
+            btnSpeed.text = "${currentSpeed}x"
+        }
+
+        btnFullscreen?.setOnClickListener {
+            toggleFullscreen()
+        }
+
+        btnEpisodeList?.setOnClickListener {
+            if (nextEpisodeId != null) {
+                playNextEpisode()
+            } else {
+                Toast.makeText(this, "Tidak ada episode berikutnya", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun toggleFullscreen() {
+        val btnFullscreen = binding.playerView.findViewById<ImageButton>(R.id.btnFullscreen)
+        if (isFullscreen) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            btnFullscreen?.setImageResource(R.drawable.ic_fullscreen)
+            isFullscreen = false
+        } else {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            btnFullscreen?.setImageResource(R.drawable.ic_fullscreen_exit)
+            isFullscreen = true
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupHoldToSpeed() {
+        val holdRunnable = Runnable {
+            if (exoPlayer?.isPlaying == true) {
+                isHoldingSpeed = true
+                exoPlayer?.playbackParameters = PlaybackParameters(2.0f)
+                binding.tvSpeedIndicator.visibility = View.VISIBLE
+            }
+        }
+
+        binding.playerView.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    holdHandler.postDelayed(holdRunnable, 450)
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    holdHandler.removeCallbacks(holdRunnable)
+                    if (isHoldingSpeed) {
+                        isHoldingSpeed = false
+                        exoPlayer?.playbackParameters = PlaybackParameters(currentSpeed)
+                        binding.tvSpeedIndicator.visibility = View.GONE
+                    }
+                }
+            }
+            false
+        }
+    }
+
+    private fun loadEpisode(epId: String) {
+        binding.pbWatchLoading.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            try {
+                val res = ApiClient.service.getEpisode(epId)
+                if (res.status && res.data != null) {
+                    val data = res.data
+                    bindEpisodeData(data)
+                } else {
+                    Toast.makeText(this@WatchActivity, "Server video tidak ditemukan", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@WatchActivity, "Gagal memuat video: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            } finally {
+                binding.pbWatchLoading.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun bindEpisodeData(data: EpisodeDetailData) {
+        val servers = (data.server ?: emptyList()).filter { s ->
+            !s.link.isNullOrBlank() && !s.quality.isNullOrBlank() && s.type == "direct"
+        }
+        currentServers = if (servers.isNotEmpty()) servers else (data.server ?: emptyList())
+
+        nextEpisodeId = data.nextEpisode?.id
+        nextEpisodeTitle = data.nextEpisode?.title
+
+        selectedServer = currentServers.find { it.quality == "720p" }
+            ?: currentServers.find { it.quality == "480p" }
+            ?: currentServers.firstOrNull()
+
+        selectedServer?.let { playServer(it, 0L) }
+    }
+
+    private fun playServer(server: ServerItem, seekToMs: Long) {
+        selectedServer = server
+        val btnQuality = binding.playerView.findViewById<TextView>(R.id.btnQuality)
+        btnQuality?.text = server.quality ?: "AUTO"
+
+        val streamUrl = server.getStreamingUrl()
+        if (streamUrl.isNotBlank()) {
+            val mediaItem = MediaItem.fromUri(Uri.parse(streamUrl))
+            exoPlayer?.setMediaItem(mediaItem)
+            exoPlayer?.prepare()
+            if (seekToMs > 0) {
+                exoPlayer?.seekTo(seekToMs)
+            }
+            exoPlayer?.play()
+        }
+    }
+
+    private fun showQualityDialog() {
+        if (currentServers.isEmpty()) return
+        val qualities = currentServers.map { "${it.quality} (${it.name ?: "Server"})" }.toTypedArray()
+        val currentIndex = currentServers.indexOf(selectedServer).coerceAtLeast(0)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.server_resolution)
+            .setSingleChoiceItems(qualities, currentIndex) { dialog, which ->
+                val chosen = currentServers[which]
+                val currentPos = exoPlayer?.currentPosition ?: 0L
+                playServer(chosen, currentPos)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Tutup", null)
+            .show()
+    }
+
+    private fun playNextEpisode() {
+        val nextId = nextEpisodeId ?: return
+        val nextTitle = nextEpisodeTitle ?: "Next Episode"
+        episodeId = nextId
+        episodeTitle = nextTitle
+
+        val tvTitle = binding.playerView.findViewById<TextView>(R.id.tvPlayerTitle)
+        tvTitle?.text = if (animeTitle.isNotBlank()) "$animeTitle - $episodeTitle" else episodeTitle
+
+        loadEpisode(nextId)
+    }
+
+    private fun saveProgress() {
+        val pos = exoPlayer?.currentPosition ?: 0L
+        if (animeId.isNotBlank() && animeTitle.isNotBlank()) {
+            historyStorage.saveAnimeHistory(
+                id = animeId,
+                title = animeTitle,
+                cover = animePoster,
+                episodeTitle = episodeTitle,
+                progressMs = pos
+            )
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveProgress()
+        exoPlayer?.pause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        saveProgress()
+        exoPlayer?.release()
+        exoPlayer = null
+    }
+}

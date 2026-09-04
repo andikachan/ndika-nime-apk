@@ -1,0 +1,250 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0b0b10;
+  --ink-2: #141419;
+  --panel: #181820;
+  --bone: #f0ead9;
+  --ember: #ff4e2d;
+  --gold: #d4a73c;
+  --line: #2a2a35;
+  --muted: #8a8a97;
+}
+
+/* ============================================================ */
+/* ===== TEMA WARNA WEBSITE (diatur admin lewat /admin)     ==== */
+/* ============================================================ */
+/* Variabel --gold/--ink/--panel/--ink-2/--ember di atas ini akan
+   di-override secara runtime (lewat document.documentElement.style,
+   lihat src/components/SiteGate.jsx) sesuai warna yang disimpan admin
+   di Redis (site:settings.theme). Aturan di bawah ini memetakan setiap
+   class Tailwind arbitrary-color yang dipakai di seluruh komponen
+   (mis. bg-[#d4a73c], text-[#0b0b10]/90, hover:border-[#d4a73c]) supaya
+   ikut mengikuti variabel tersebut -- jadi admin cukup ganti warna sekali
+   di panel, tanpa perlu edit tiap komponen satu-satu.
+   File ini digenerate dari daftar class yang benar-benar dipakai di
+   seluruh file JSX (lihat komentar di Admin.jsx bagian Warna Website). */
+[class~="accent-[#d4a73c]"] { accent-color: var(--gold) !important; }
+[class~="bg-[#d4a73c]"] { background-color: var(--gold) !important; }
+[class~="bg-[#d4a73c]/10"] { background-color: color-mix(in srgb, var(--gold) 10%, transparent) !important; }
+[class~="bg-[#d4a73c]/15"] { background-color: color-mix(in srgb, var(--gold) 15%, transparent) !important; }
+[class~="bg-[#d4a73c]/20"] { background-color: color-mix(in srgb, var(--gold) 20%, transparent) !important; }
+[class~="bg-[#d4a73c]/25"] { background-color: color-mix(in srgb, var(--gold) 25%, transparent) !important; }
+[class~="bg-[#d4a73c]/30"] { background-color: color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+[class~="bg-[#d4a73c]/5"] { background-color: color-mix(in srgb, var(--gold) 5%, transparent) !important; }
+[class~="border-[#d4a73c]"] { border-color: var(--gold) !important; }
+[class~="border-[#d4a73c]/15"] { border-color: color-mix(in srgb, var(--gold) 15%, transparent) !important; }
+[class~="border-[#d4a73c]/20"] { border-color: color-mix(in srgb, var(--gold) 20%, transparent) !important; }
+[class~="border-[#d4a73c]/25"] { border-color: color-mix(in srgb, var(--gold) 25%, transparent) !important; }
+[class~="border-[#d4a73c]/30"] { border-color: color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+[class~="border-[#d4a73c]/40"] { border-color: color-mix(in srgb, var(--gold) 40%, transparent) !important; }
+[class~="border-[#d4a73c]/50"] { border-color: color-mix(in srgb, var(--gold) 50%, transparent) !important; }
+[class~="border-t-[#d4a73c]"] { border-top-color: var(--gold) !important; }
+[class~="card:text-[#d4a73c]"] { color: var(--gold) !important; }
+[class~="fill-[#d4a73c]"] { fill: var(--gold) !important; }
+[class~="focus:border-[#d4a73c]/30"]:focus { border-color: color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+[class~="focus:border-[#d4a73c]/40"]:focus { border-color: color-mix(in srgb, var(--gold) 40%, transparent) !important; }
+[class~="focus:border-[#d4a73c]/50"]:focus { border-color: color-mix(in srgb, var(--gold) 50%, transparent) !important; }
+[class~="from-[#d4a73c]"] { --tw-gradient-from: var(--gold) !important; }
+[class~="from-[#d4a73c]/70"] { --tw-gradient-from: color-mix(in srgb, var(--gold) 70%, transparent) !important; }
+.group:hover [class~="group-hover:bg-[#d4a73c]"] { background-color: var(--gold) !important; }
+.group:hover [class~="group-hover:bg-[#d4a73c]/30"] { background-color: color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+.group:hover [class~="group-hover:text-[#d4a73c]"] { color: var(--gold) !important; }
+[class~="hover:bg-[#d4a73c]"]:hover { background-color: var(--gold) !important; }
+[class~="hover:bg-[#d4a73c]/10"]:hover { background-color: color-mix(in srgb, var(--gold) 10%, transparent) !important; }
+[class~="hover:bg-[#d4a73c]/15"]:hover { background-color: color-mix(in srgb, var(--gold) 15%, transparent) !important; }
+[class~="hover:border-[#d4a73c]"]:hover { border-color: var(--gold) !important; }
+[class~="hover:border-[#d4a73c]/20"]:hover { border-color: color-mix(in srgb, var(--gold) 20%, transparent) !important; }
+[class~="hover:border-[#d4a73c]/25"]:hover { border-color: color-mix(in srgb, var(--gold) 25%, transparent) !important; }
+[class~="hover:border-[#d4a73c]/30"]:hover { border-color: color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+[class~="hover:border-[#d4a73c]/40"]:hover { border-color: color-mix(in srgb, var(--gold) 40%, transparent) !important; }
+[class~="hover:border-[#d4a73c]/50"]:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent) !important; }
+[class~="hover:text-[#d4a73c]"]:hover { color: var(--gold) !important; }
+.peer:checked ~ [class~="peer-checked:bg-[#d4a73c]"] { background-color: var(--gold) !important; }
+[class~="selection:bg-[#d4a73c]"]::selection { background-color: var(--gold) !important; }
+[class~="shadow-[#d4a73c]/20"] { --tw-shadow-color: color-mix(in srgb, var(--gold) 20%, transparent) !important; }
+[class~="shadow-[#d4a73c]/50"] { --tw-shadow-color: color-mix(in srgb, var(--gold) 50%, transparent) !important; }
+[class~="text-[#d4a73c]"] { color: var(--gold) !important; }
+[class~="text-[#d4a73c]/20"] { color: color-mix(in srgb, var(--gold) 20%, transparent) !important; }
+[class~="text-[#d4a73c]/30"] { color: color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+[class~="text-[#d4a73c]/40"] { color: color-mix(in srgb, var(--gold) 40%, transparent) !important; }
+[class~="text-[#d4a73c]/50"] { color: color-mix(in srgb, var(--gold) 50%, transparent) !important; }
+[class~="text-[#d4a73c]/60"] { color: color-mix(in srgb, var(--gold) 60%, transparent) !important; }
+[class~="text-[#d4a73c]/70"] { color: color-mix(in srgb, var(--gold) 70%, transparent) !important; }
+[class~="text-[#d4a73c]/80"] { color: color-mix(in srgb, var(--gold) 80%, transparent) !important; }
+[class~="to-[#d4a73c]"] { --tw-gradient-to: var(--gold) !important; }
+[class~="to-[#d4a73c]/20"] { --tw-gradient-to: color-mix(in srgb, var(--gold) 20%, transparent) !important; }
+[class~="bg-[#0b0b10]"] { background-color: var(--ink) !important; }
+[class~="bg-[#0b0b10]/90"] { background-color: color-mix(in srgb, var(--ink) 90%, transparent) !important; }
+[class~="border-[#0b0b10]"] { border-color: var(--ink) !important; }
+[class~="border-[#0b0b10]/20"] { border-color: color-mix(in srgb, var(--ink) 20%, transparent) !important; }
+[class~="border-[#0b0b10]/30"] { border-color: color-mix(in srgb, var(--ink) 30%, transparent) !important; }
+[class~="border-t-[#0b0b10]"] { border-top-color: var(--ink) !important; }
+[class~="from-[#0b0b10]"] { --tw-gradient-from: var(--ink) !important; }
+[class~="from-[#0b0b10]/60"] { --tw-gradient-from: color-mix(in srgb, var(--ink) 60%, transparent) !important; }
+[class~="hover:text-[#0b0b10]"]:hover { color: var(--ink) !important; }
+[class~="text-[#0b0b10]"] { color: var(--ink) !important; }
+[class~="to-[#0b0b10]"] { --tw-gradient-to: var(--ink) !important; }
+[class~="via-[#0b0b10]/40"] { --tw-gradient-via: color-mix(in srgb, var(--ink) 40%, transparent) !important; }
+[class~="via-[#0b0b10]/90"] { --tw-gradient-via: color-mix(in srgb, var(--ink) 90%, transparent) !important; }
+[class~="bg-[#181820]"] { background-color: var(--panel) !important; }
+[class~="from-[#181820]"] { --tw-gradient-from: var(--panel) !important; }
+[class~="ring-offset-[#181820]"] { --tw-ring-offset-color: var(--panel) !important; }
+[class~="to-[#181820]"] { --tw-gradient-to: var(--panel) !important; }
+[class~="to-[#181820]/40"] { --tw-gradient-to: color-mix(in srgb, var(--panel) 40%, transparent) !important; }
+[class~="via-[#181820]"] { --tw-gradient-via: var(--panel) !important; }
+[class~="via-[#181820]/80"] { --tw-gradient-via: color-mix(in srgb, var(--panel) 80%, transparent) !important; }
+[class~="via-[#181820]/85"] { --tw-gradient-via: color-mix(in srgb, var(--panel) 85%, transparent) !important; }
+[class~="via-[#181820]/90"] { --tw-gradient-via: color-mix(in srgb, var(--panel) 90%, transparent) !important; }
+[class~="via-[#181820]/95"] { --tw-gradient-via: color-mix(in srgb, var(--panel) 95%, transparent) !important; }
+[class~="bg-[#141419]"] { background-color: var(--ink-2) !important; }
+[class~="bg-[#141419]/70"] { background-color: color-mix(in srgb, var(--ink-2) 70%, transparent) !important; }
+[class~="border-[#141419]"] { border-color: var(--ink-2) !important; }
+[class~="from-[#141419]"] { --tw-gradient-from: var(--ink-2) !important; }
+[class~="text-[#141419]"] { color: var(--ink-2) !important; }
+[class~="via-[#141419]/40"] { --tw-gradient-via: color-mix(in srgb, var(--ink-2) 40%, transparent) !important; }
+[class~="bg-[#ff4e2d]"] { background-color: var(--ember) !important; }
+[class~="bg-[#ff4e2d]/5"] { background-color: color-mix(in srgb, var(--ember) 5%, transparent) !important; }
+[class~="border-[#ff4e2d]"] { border-color: var(--ember) !important; }
+[class~="border-[#ff4e2d]/20"] { border-color: color-mix(in srgb, var(--ember) 20%, transparent) !important; }
+[class~="border-[#ff4e2d]/25"] { border-color: color-mix(in srgb, var(--ember) 25%, transparent) !important; }
+[class~="border-[#ff4e2d]/35"] { border-color: color-mix(in srgb, var(--ember) 35%, transparent) !important; }
+[class~="border-[#ff4e2d]/40"] { border-color: color-mix(in srgb, var(--ember) 40%, transparent) !important; }
+[class~="focus:border-[#ff4e2d]/50"]:focus { border-color: color-mix(in srgb, var(--ember) 50%, transparent) !important; }
+[class~="focus:border-[#ff4e2d]/60"]:focus { border-color: color-mix(in srgb, var(--ember) 60%, transparent) !important; }
+[class~="from-[#ff4e2d]/15"] { --tw-gradient-from: color-mix(in srgb, var(--ember) 15%, transparent) !important; }
+.group:hover [class~="group-hover:text-[#ff4e2d]"] { color: var(--ember) !important; }
+[class~="hover:bg-[#ff4e2d]"]:hover { background-color: var(--ember) !important; }
+[class~="hover:border-[#ff4e2d]"]:hover { border-color: var(--ember) !important; }
+[class~="hover:border-[#ff4e2d]/40"]:hover { border-color: color-mix(in srgb, var(--ember) 40%, transparent) !important; }
+[class~="hover:border-[#ff4e2d]/50"]:hover { border-color: color-mix(in srgb, var(--ember) 50%, transparent) !important; }
+[class~="hover:border-[#ff4e2d]/60"]:hover { border-color: color-mix(in srgb, var(--ember) 60%, transparent) !important; }
+[class~="hover:shadow-[#ff4e2d]/25"]:hover { --tw-shadow-color: color-mix(in srgb, var(--ember) 25%, transparent) !important; }
+[class~="hover:text-[#ff4e2d]"]:hover { color: var(--ember) !important; }
+[class~="shadow-[#ff4e2d]/20"] { --tw-shadow-color: color-mix(in srgb, var(--ember) 20%, transparent) !important; }
+[class~="shadow-[#ff4e2d]/30"] { --tw-shadow-color: color-mix(in srgb, var(--ember) 30%, transparent) !important; }
+[class~="text-[#ff4e2d]"] { color: var(--ember) !important; }
+[class~="to-[#ff4e2d]"] { --tw-gradient-to: var(--ember) !important; }
+
+.font-display { font-family: 'Anton', sans-serif; letter-spacing: 0.3px; }
+.font-mono-ui { font-family: 'IBM Plex Mono', monospace; }
+
+@layer utilities {
+  .hero-slide {
+    backface-visibility: hidden;
+  }
+  .card-cut {
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+  .card-cut-sm {
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  }
+  .chip-cut {
+    clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+  }
+  .btn-cut {
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  }
+  .screentone-bg {
+    background-image: radial-gradient(circle, rgba(240,234,217,0.08) 1px, transparent 1px);
+    background-size: 8px 8px;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes shimmer {
+  100% { transform: translate3d(100%, 0, 0) skewX(-20deg); }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.glass-panel {
+  background: rgba(18, 18, 24, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(24, 24, 32, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(212, 167, 60, 0.35);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(212, 167, 60, 0.15);
+}
+
+.glow-pill {
+  box-shadow: 0 0 12px -2px var(--gold);
+}
+
+.scroll-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(24, 24, 32, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+.scroll-btn:hover {
+  background: var(--gold);
+  color: #0b0b10;
+  border-color: var(--gold);
+  box-shadow: 0 0 16px -2px rgba(212, 167, 60, 0.4);
+  transform: scale(1.06);
+}
+
+.scroll-btn:active {
+  transform: scale(0.95);
+}
+

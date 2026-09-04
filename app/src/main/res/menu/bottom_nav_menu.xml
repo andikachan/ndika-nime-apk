@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_anime"
+        android:icon="@drawable/ic_anime"
+        android:title="@string/nav_anime" />
+    <item
+        android:id="@+id/menu_manga"
+        android:icon="@drawable/ic_manga"
+        android:title="@string/nav_manga" />
+    <item
+        android:id="@+id/menu_explore"
+        android:icon="@drawable/ic_search"
+        android:title="@string/nav_explore" />
+    <item
+        android:id="@+id/menu_library"
+        android:icon="@drawable/ic_library"
+        android:title="@string/nav_library" />
+</menu>
