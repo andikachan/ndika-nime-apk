@@ -25,7 +25,12 @@ import com.ndikanime.app.data.model.EpisodeDetailData
 import com.ndikanime.app.data.model.ServerItem
 import com.ndikanime.app.data.storage.HistoryStorage
 import com.ndikanime.app.databinding.ActivityWatchBinding
+import com.ndikanime.app.data.storage.AuthManager
+import com.ndikanime.app.data.upstash.UpstashRepository
 import com.ndikanime.app.ui.community.CommentsBottomSheet
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class WatchActivity : AppCompatActivity() {
@@ -33,6 +38,8 @@ class WatchActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWatchBinding
     private var exoPlayer: ExoPlayer? = null
     private val historyStorage by lazy { HistoryStorage(this) }
+    private val authManager by lazy { AuthManager(this) }
+    private var watchTimeTrackingJob: Job? = null
 
     private var episodeId: String = ""
     private var episodeTitle: String = ""
@@ -62,9 +69,11 @@ class WatchActivity : AppCompatActivity() {
         animeTitle = intent.getStringExtra("anime_title") ?: ""
         animePoster = intent.getStringExtra("anime_poster") ?: ""
 
+        setupViews()
         initPlayer()
         setupCustomControls()
         setupHoldToSpeed()
+
         loadEpisode(episodeId)
     }
 
@@ -72,6 +81,14 @@ class WatchActivity : AppCompatActivity() {
         exoPlayer = ExoPlayer.Builder(this).build().apply {
             playWhenReady = true
             addListener(object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) {
+                        startWatchTimeTracker()
+                    } else {
+                        stopWatchTimeTracker()
+                    }
+                }
+
                 override fun onPlaybackStateChanged(state: Int) {
                     when (state) {
                         Player.STATE_BUFFERING -> binding.pbWatchLoading.visibility = View.VISIBLE
@@ -270,6 +287,43 @@ class WatchActivity : AppCompatActivity() {
         loadEpisode(episodeId)
     }
 
+    private fun startWatchTimeTracker() {
+        val uid = authManager.userId ?: return
+        if (watchTimeTrackingJob?.isActive == true) return
+        watchTimeTrackingJob = lifecycleScope.launch {
+            while (isActive) {
+                delay(20000)
+                if (exoPlayer?.isPlaying == true) {
+                    try {
+                        val result = UpstashRepository.addWatchTime(uid, 20)
+                        if (result.levelUp) {
+                            authManager.getUserProfile()?.let { p ->
+                                authManager.saveUser(
+                                    p.copy(
+                                        level = result.newLevel,
+                                        title = result.newTitle,
+                                        watchTime = result.watchTime,
+                                        coins = p.coins + result.coinsEarned
+                                    )
+                                )
+                            }
+                            Toast.makeText(
+                                this@WatchActivity,
+                                "🎉 Level Up! Kamu sekarang Level ${result.newLevel} (${result.newTitle})! +${result.coinsEarned} Koin",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } catch (e: Exception) {}
+                }
+            }
+        }
+    }
+
+    private fun stopWatchTimeTracker() {
+        watchTimeTrackingJob?.cancel()
+        watchTimeTrackingJob = null
+    }
+
     private fun saveProgress() {
         val pos = exoPlayer?.currentPosition ?: 0L
         if (animeId.isNotBlank() && animeTitle.isNotBlank()) {
@@ -286,12 +340,14 @@ class WatchActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        stopWatchTimeTracker()
         saveProgress()
         exoPlayer?.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        stopWatchTimeTracker()
         saveProgress()
         exoPlayer?.release()
         exoPlayer = null

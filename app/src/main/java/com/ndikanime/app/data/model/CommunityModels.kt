@@ -360,14 +360,28 @@ data class ClanItem(
     @SerializedName("name") val name: String,
     @SerializedName("tag") val tag: String? = null,
     @SerializedName("description") val description: String? = null,
+    @SerializedName("desc") val desc: String? = null,
     @SerializedName("icon") val icon: String? = null,
+    @SerializedName("banner") val banner: String? = null,
     @SerializedName("color") val color: String? = null,
-    @SerializedName("level") val level: Int = 1,
+    @SerializedName("level") var level: Int = 1,
     @SerializedName("xp") val xp: Long = 0,
     @SerializedName("leaderId") val leaderId: String? = null,
     @SerializedName("leaderName") val leaderName: String? = null,
     @SerializedName("memberCount") var memberCount: Int = 1,
-    @SerializedName("createdAt") val createdAt: Long = System.currentTimeMillis()
+    @SerializedName("createdAt") val createdAt: Any? = null
+) {
+    fun getEffectiveDescription(): String = desc ?: description ?: ""
+}
+
+data class LevelUpResult(
+    val success: Boolean = false,
+    val oldLevel: Long = 1,
+    val newLevel: Long = 1,
+    val levelUp: Boolean = false,
+    val watchTime: Long = 0,
+    val newTitle: String = "Anime Newbie",
+    val coinsEarned: Long = 0
 )
 
 data class ClanMemberItem(

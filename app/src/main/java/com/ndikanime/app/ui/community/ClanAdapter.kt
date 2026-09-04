@@ -22,9 +22,11 @@ class ClanAdapter(
         val clan = clans[position]
         holder.binding.tvClanName.text = clan.name
         holder.binding.tvClanTag.text = "[${clan.tag ?: "CLAN"}]"
-        holder.binding.tvClanDesc.text = clan.description ?: "Komunitas pencinta anime"
+        holder.binding.tvClanDesc.text = clan.getEffectiveDescription().ifBlank { "Komunitas pencinta anime" }
         holder.binding.tvClanStats.text = "Level ${clan.level} • ${clan.memberCount} Anggota • Ketua: ${clan.leaderName ?: "-"}"
-        holder.binding.tvClanIcon.text = clan.icon ?: "⚔️"
+        val initial = (clan.tag?.take(2) ?: clan.name.take(2)).uppercase()
+        holder.binding.tvClanIcon.text = initial
+        holder.binding.tvClanIcon.textSize = 14f
 
         holder.binding.btnJoinClan.setOnClickListener {
             onJoinClick(clan)

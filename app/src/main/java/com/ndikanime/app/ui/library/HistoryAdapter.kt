@@ -47,7 +47,7 @@ class HistoryAdapter(
             )
             binding.tvTimestamp.text = timeAgo
 
-            binding.ivCover.load(item.cover) {
+            binding.ivCover.load(item.getDisplayCover()) {
                 crossfade(true)
                 placeholder(R.drawable.kaguya)
                 error(R.drawable.kaguya)

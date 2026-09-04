@@ -632,7 +632,7 @@ class CommunityFragment : Fragment() {
         val btnSubmit = dialogView.findViewById<MaterialButton>(R.id.btnSubmitAuth)
         val pbAuth = dialogView.findViewById<ProgressBar>(R.id.pbAuth)
 
-        var isRegister = false
+        var authMode = 0 // 0 = login, 1 = register, 2 = reset password
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
@@ -640,9 +640,24 @@ class CommunityFragment : Fragment() {
 
         tabAuth.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                isRegister = (tab?.position == 1)
-                etName.visibility = if (isRegister) View.VISIBLE else View.GONE
-                btnSubmit.text = if (isRegister) "Daftar Sekarang" else "Masuk Sekarang"
+                authMode = tab?.position ?: 0
+                when (authMode) {
+                    0 -> {
+                        etName.visibility = View.GONE
+                        etPassword.hint = "Kata Sandi"
+                        btnSubmit.text = "Masuk Sekarang"
+                    }
+                    1 -> {
+                        etName.visibility = View.VISIBLE
+                        etPassword.hint = "Kata Sandi"
+                        btnSubmit.text = "Daftar Sekarang"
+                    }
+                    2 -> {
+                        etName.visibility = View.GONE
+                        etPassword.hint = "Kata Sandi Baru"
+                        btnSubmit.text = "Setel Ulang Kata Sandi"
+                    }
+                }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
@@ -653,8 +668,13 @@ class CommunityFragment : Fragment() {
             val pass = etPassword.text.toString().trim()
             val name = etName.text.toString().trim()
 
-            if (email.isEmpty() || pass.isEmpty() || (isRegister && name.isEmpty())) {
+            if (email.isEmpty() || pass.isEmpty() || (authMode == 1 && name.isEmpty())) {
                 Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (pass.length < 6) {
+                Toast.makeText(context, "Kata sandi minimal 6 karakter", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -663,22 +683,31 @@ class CommunityFragment : Fragment() {
 
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val user = if (isRegister) {
-                        UpstashRepository.register(name, email, pass)
+                    if (authMode == 2) {
+                        val (success, msg) = UpstashRepository.resetPassword(email, pass)
+                        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                        if (success) {
+                            tabAuth.getTabAt(0)?.select()
+                            etPassword.setText("")
+                        }
                     } else {
-                        UpstashRepository.login(email, pass)
-                    }
+                        val user = if (authMode == 1) {
+                            UpstashRepository.register(name, email, pass)
+                        } else {
+                            UpstashRepository.login(email, pass)
+                        }
 
-                    if (user != null) {
-                        val sessionToken = "upstash_token_${user.id}"
-                        authManager.saveUserSession(sessionToken, user)
-                        updateAuthButton()
-                        dialog.dismiss()
-                        Toast.makeText(context, "Selamat datang, ${user.name}!", Toast.LENGTH_SHORT).show()
-                        loadTab(currentTab)
-                    } else {
-                        val errMsg = if (isRegister) "Pendaftaran gagal. Email mungkin sudah digunakan." else "Email atau kata sandi salah."
-                        Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
+                        if (user != null) {
+                            val sessionToken = "upstash_token_${user.id}"
+                            authManager.saveUserSession(sessionToken, user)
+                            updateAuthButton()
+                            dialog.dismiss()
+                            Toast.makeText(context, "Selamat datang, ${user.name}!", Toast.LENGTH_SHORT).show()
+                            loadTab(currentTab)
+                        } else {
+                            val errMsg = if (authMode == 1) "Pendaftaran gagal. Email mungkin sudah digunakan." else "Email atau kata sandi salah."
+                            Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } catch (e: Exception) {
                     Toast.makeText(context, "Gagal terhubung: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()

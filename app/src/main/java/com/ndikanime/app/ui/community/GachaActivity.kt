@@ -53,7 +53,7 @@ class GachaActivity : AppCompatActivity() {
     private fun refreshData() {
         val user = authManager.getUserProfile()
         if (user != null) {
-            binding.tvGachaUserCoins.text = "${user.coins} 🪙"
+            binding.tvGachaUserCoins.text = "${user.coins} Koin"
         }
 
         val uid = authManager.userId ?: return
@@ -65,7 +65,7 @@ class GachaActivity : AppCompatActivity() {
                 val remoteProfile = UpstashRepository.getProfile(uid)
                 if (remoteProfile != null) {
                     authManager.saveUserProfile(remoteProfile)
-                    binding.tvGachaUserCoins.text = "${remoteProfile.coins} 🪙"
+                    binding.tvGachaUserCoins.text = "${remoteProfile.coins} Koin"
                 }
 
                 myCards = UpstashRepository.getUserCards(uid)
@@ -101,7 +101,7 @@ class GachaActivity : AppCompatActivity() {
         val cost = if (isMulti) 900L else 100L
         val user = authManager.getUserProfile()
         if ((user?.coins ?: 0L) < cost) {
-            Toast.makeText(this, "Koin kamu tidak cukup (butuh $cost 🪙). Tonton anime untuk menambah koin!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Koin kamu tidak cukup (butuh $cost Koin). Tonton anime untuk menambah koin!", Toast.LENGTH_LONG).show()
             return
         }
 

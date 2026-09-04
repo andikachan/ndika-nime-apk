@@ -80,7 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="38dp"
             android:layout_marginStart="12dp"
-            android:text="+150 🪙"
+            android:text="+150 Koin"
             android:textColor="@color/accent_gold"
             android:textSize="11sp"
             android:textStyle="bold"

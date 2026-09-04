@@ -87,11 +87,16 @@ data class MangaChapterItem(
 ) : Parcelable {
     fun getDisplayTitle(): String {
         val num = chapterNum ?: chapter
-        return when {
-            !num.isNullOrBlank() -> if (num.startsWith("Ch", ignoreCase = true) || num.startsWith("Chapter", ignoreCase = true)) num else "Chapter $num"
-            !title.isNullOrBlank() -> title
-            else -> "Chapter"
+        if (!num.isNullOrBlank()) {
+            return if (num.startsWith("Ch", ignoreCase = true) || num.startsWith("Chapter", ignoreCase = true)) num else "Chapter $num"
         }
+        val t = title?.trim() ?: ""
+        val extractedFromSlug = Regex("chapter-(\\d+(\\.\\d+)?)", RegexOption.IGNORE_CASE).find(slug ?: "")?.groupValues?.get(1)
+            ?: Regex("-(\\d+(\\.\\d+)?)$", RegexOption.IGNORE_CASE).find(slug ?: "")?.groupValues?.get(1)
+        if (extractedFromSlug != null) {
+            return if (t.contains(extractedFromSlug)) t else "Chapter $extractedFromSlug" + (if (t.isNotBlank() && !t.equals("Chapter", ignoreCase = true)) " - $t" else "")
+        }
+        return if (t.isNotBlank()) t else "Chapter"
     }
 
     fun getDisplayDate(): String {

@@ -12,6 +12,8 @@ import com.ndikanime.app.data.model.MangaChapterItem
 import com.ndikanime.app.data.model.MangaReadData
 import com.ndikanime.app.data.storage.HistoryStorage
 import com.ndikanime.app.databinding.ActivityMangaReaderBinding
+import com.ndikanime.app.data.storage.AuthManager
+import com.ndikanime.app.data.upstash.UpstashRepository
 import com.ndikanime.app.ui.community.CommentsBottomSheet
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMangaReaderBinding
     private val historyStorage by lazy { HistoryStorage(this) }
+    private val authManager by lazy { AuthManager(this) }
     private val pageAdapter by lazy {
         MangaPageAdapter { toggleControls() }
     }
@@ -109,6 +112,33 @@ class MangaReaderActivity : AppCompatActivity() {
                         chapterTitle = chapterTitle,
                         chapterSlug = chapterSlug
                     )
+
+                    // Award Reading EXP (120s)
+                    val uid = authManager.userId
+                    if (!uid.isNullOrBlank()) {
+                        lifecycleScope.launch {
+                            try {
+                                val result = UpstashRepository.addWatchTime(uid, 120)
+                                if (result.levelUp) {
+                                    authManager.getUserProfile()?.let { p ->
+                                        authManager.saveUser(
+                                            p.copy(
+                                                level = result.newLevel,
+                                                title = result.newTitle,
+                                                watchTime = result.watchTime,
+                                                coins = p.coins + result.coinsEarned
+                                            )
+                                        )
+                                    }
+                                    Toast.makeText(
+                                        this@MangaReaderActivity,
+                                        "🎉 Level Up! Kamu mencapai Level ${result.newLevel} (${result.newTitle})! +${result.coinsEarned} Koin",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            } catch (e: Exception) {}
+                        }
+                    }
                 } else {
                     Toast.makeText(this@MangaReaderActivity, "Gambar komik tidak ditemukan", Toast.LENGTH_SHORT).show()
                 }

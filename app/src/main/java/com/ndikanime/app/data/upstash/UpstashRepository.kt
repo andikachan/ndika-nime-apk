@@ -283,6 +283,8 @@ object UpstashRepository {
             userId = user.id,
             name = user.name,
             avatar = user.picture,
+            level = user.level,
+            title = user.title,
             role = "host",
             lastSeen = now
         )
@@ -336,6 +338,8 @@ object UpstashRepository {
             userId = user.id,
             name = user.name,
             avatar = user.picture,
+            level = user.level,
+            title = user.title,
             role = if (isHost) "host" else "member",
             lastSeen = now
         )
@@ -645,6 +649,16 @@ object UpstashRepository {
 
     // ===== CLANS =====
 
+    fun xpForClanLevel(level: Int): Long = Math.round(2200.0 * level + 260.0 * level * level)
+
+    fun clanLevelFromXp(xp: Long): Int {
+        if (xp <= 0) return 1
+        var level = Math.max(1, Math.floor((-2200.0 + Math.sqrt(2200.0 * 2200.0 + 4.0 * 260.0 * xp)) / (2.0 * 260.0)).toInt())
+        while (xp >= xpForClanLevel(level)) level++
+        while (level > 1 && xp < xpForClanLevel(level - 1)) level--
+        return level
+    }
+
     suspend fun listClans(): List<ClanItem> = withContext(Dispatchers.IO) {
         val clanIds = UpstashClient.zrevrange("clan:all", 0, 30)
         val list = mutableListOf<ClanItem>()
@@ -654,8 +668,11 @@ object UpstashRepository {
                 val c = gson.fromJson(raw, ClanItem::class.java)
                 val members = UpstashClient.hgetall("clan:members:$cid")
                 c.memberCount = members.size.coerceAtLeast(1)
+                c.level = clanLevelFromXp(c.xp)
                 list.add(c)
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         list
     }
@@ -663,10 +680,16 @@ object UpstashRepository {
     suspend fun getMyClan(userId: String): ClanItem? = withContext(Dispatchers.IO) {
         val clanId = UpstashClient.get("clan:userClan:$userId") ?: return@withContext null
         val raw = UpstashClient.get("clan:$clanId") ?: return@withContext null
-        val c = gson.fromJson(raw, ClanItem::class.java)
-        val members = UpstashClient.hgetall("clan:members:$clanId")
-        c.memberCount = members.size.coerceAtLeast(1)
-        c
+        try {
+            val c = gson.fromJson(raw, ClanItem::class.java)
+            val members = UpstashClient.hgetall("clan:members:$clanId")
+            c.memberCount = members.size.coerceAtLeast(1)
+            c.level = clanLevelFromXp(c.xp)
+            c
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     suspend fun createClan(user: UserProfile, name: String, tag: String, desc: String, icon: String, color: String): ClanItem = withContext(Dispatchers.IO) {
@@ -676,6 +699,7 @@ object UpstashRepository {
             name = name,
             tag = tag.uppercase(),
             description = desc,
+            desc = desc,
             icon = icon,
             color = color,
             leaderId = user.id,
@@ -702,5 +726,110 @@ object UpstashRepository {
         UpstashClient.hdel("clan:members:$clanId", userId)
         UpstashClient.del("clan:userClan:$userId")
         true
+    }
+
+    // ===== PASSWORD RESET =====
+
+    suspend fun resetPassword(email: String, newPass: String): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+        val normEmail = email.trim().lowercase()
+        val userId = UpstashClient.get("user:email:$normEmail")
+            ?: return@withContext false to "Email tidak terdaftar di sistem."
+        val userRaw = UpstashClient.get("user:$userId")
+            ?: return@withContext false to "Data akun tidak ditemukan."
+
+        val mapType = object : TypeToken<MutableMap<String, Any>>() {}.type
+        val userMap: MutableMap<String, Any> = gson.fromJson(userRaw, mapType)
+
+        val hashedPass = try {
+            BCrypt.hashpw(newPass, BCrypt.gensalt(10))
+        } catch (e: Exception) {
+            newPass
+        }
+
+        userMap["password"] = hashedPass
+        val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date())
+        userMap["updatedAt"] = now
+
+        UpstashClient.set("user:$userId", gson.toJson(userMap))
+        true to "Kata sandi berhasil diperbarui! Silakan masuk."
+    }
+
+    // ===== WATCH TIME & LEVELING SYSTEM =====
+
+    private val TITLE_THRESHOLDS = listOf(
+        1000L to "Anime Creator",
+        500L to "Anime Universe",
+        300L to "Anime Immortal",
+        200L to "Anime Emperor",
+        150L to "Anime Overlord",
+        100L to "Anime Supreme",
+        75L to "Anime God",
+        50L to "Anime Legend",
+        30L to "Anime Master",
+        20L to "Anime Enthusiast",
+        10L to "Anime Lover",
+        5L to "Anime Watcher",
+        0L to "Anime Newbie"
+    )
+
+    fun getTitleForLevel(level: Long): String {
+        for ((threshold, title) in TITLE_THRESHOLDS) {
+            if (level >= threshold) return title
+        }
+        return "Anime Newbie"
+    }
+
+    suspend fun addWatchTime(userId: String, seconds: Long): LevelUpResult = withContext(Dispatchers.IO) {
+        if (seconds <= 0) return@withContext LevelUpResult(false)
+        val userRaw = UpstashClient.get("user:$userId") ?: return@withContext LevelUpResult(false)
+        val mapType = object : TypeToken<MutableMap<String, Any>>() {}.type
+        val userMap: MutableMap<String, Any> = gson.fromJson(userRaw, mapType)
+
+        val currentWatchTime = (userMap["watchTime"] as? Number)?.toLong() ?: 0L
+        val newWatchTime = currentWatchTime + seconds
+
+        val oldLevel = (userMap["level"] as? Number)?.toLong() ?: (currentWatchTime / 600L).coerceAtLeast(1L)
+        val newLevel = (newWatchTime / 600L).coerceAtLeast(1L)
+        val levelUp = newLevel > oldLevel
+
+        userMap["watchTime"] = newWatchTime
+        userMap["level"] = newLevel
+
+        val newTitle = getTitleForLevel(newLevel)
+        userMap["title"] = newTitle
+
+        val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date())
+        userMap["lastWatchUpdate"] = now
+
+        var coinsEarned = 0L
+        if (levelUp) {
+            val levelsGained = (newLevel - oldLevel).coerceAtLeast(1L)
+            coinsEarned = levelsGained * 50L
+            val currentCoins = (userMap["coins"] as? Number)?.toLong() ?: 0L
+            userMap["coins"] = currentCoins + coinsEarned
+        }
+
+        UpstashClient.set("user:$userId", gson.toJson(userMap))
+        UpstashClient.zadd("leaderboard", newWatchTime.toDouble(), userId)
+
+        // Update quest progress for today
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        if (seconds >= 20) {
+            UpstashClient.set("quest:progress:$userId:d:$today:watch_episode", "1")
+        }
+
+        LevelUpResult(
+            success = true,
+            oldLevel = oldLevel,
+            newLevel = newLevel,
+            levelUp = levelUp,
+            watchTime = newWatchTime,
+            newTitle = newTitle,
+            coinsEarned = coinsEarned
+        )
     }
 }

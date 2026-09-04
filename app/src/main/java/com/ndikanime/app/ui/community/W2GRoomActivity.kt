@@ -3,17 +3,22 @@ package com.ndikanime.app.ui.community
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
+import com.ndikanime.app.R
 import com.ndikanime.app.data.api.ApiClient
 import com.ndikanime.app.data.model.*
 import com.ndikanime.app.data.storage.AuthManager
@@ -41,6 +46,8 @@ class W2GRoomActivity : AppCompatActivity() {
 
     private var heartbeatJob: Job? = null
     private var isSelfUpdating = false
+    private var isFullscreen = false
+    private var currentSpeed = 1.0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +65,7 @@ class W2GRoomActivity : AppCompatActivity() {
 
         setupViews()
         initPlayer()
+        setupCustomControls()
         joinRoom()
     }
 
@@ -122,6 +130,82 @@ class W2GRoomActivity : AppCompatActivity() {
         })
     }
 
+    private fun setupCustomControls() {
+        val btnBack = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnBackPlayer)
+        val tvTitle = binding.playerViewW2G.findViewById<TextView>(R.id.tvPlayerTitle)
+        val btnRewind = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnRewind)
+        val btnForward = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnForward)
+        val btnSpeed = binding.playerViewW2G.findViewById<TextView>(R.id.btnSpeed)
+        val btnFullscreen = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnFullscreen)
+        val btnComments = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnComments)
+        val btnEpisodeList = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnEpisodeList)
+        val btnQuality = binding.playerViewW2G.findViewById<TextView>(R.id.btnQuality)
+
+        btnEpisodeList?.visibility = View.GONE
+        btnQuality?.visibility = View.GONE
+
+        btnBack?.setOnClickListener { finish() }
+
+        btnComments?.setOnClickListener {
+            binding.tabW2GRoom.getTabAt(0)?.select()
+        }
+
+        btnRewind?.setOnClickListener {
+            if (isHost) {
+                exoPlayer?.let { p ->
+                    p.seekTo(maxOf(0L, p.currentPosition - 10000L))
+                    syncHostState()
+                }
+            } else {
+                Toast.makeText(this, "Hanya Host yang dapat mengatur pemutaran", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnForward?.setOnClickListener {
+            if (isHost) {
+                exoPlayer?.let { p ->
+                    p.seekTo(minOf(p.duration, p.currentPosition + 10000L))
+                    syncHostState()
+                }
+            } else {
+                Toast.makeText(this, "Hanya Host yang dapat mengatur pemutaran", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val speeds = listOf(1.0f, 1.25f, 1.5f, 2.0f, 0.75f)
+        btnSpeed?.setOnClickListener {
+            val nextIndex = (speeds.indexOf(currentSpeed) + 1) % speeds.size
+            currentSpeed = speeds[nextIndex]
+            exoPlayer?.playbackParameters = PlaybackParameters(currentSpeed)
+            btnSpeed.text = "${currentSpeed}x"
+        }
+
+        btnFullscreen?.setOnClickListener {
+            toggleFullscreen()
+        }
+    }
+
+    private fun toggleFullscreen() {
+        val btnFullscreen = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnFullscreen)
+        if (isFullscreen) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            btnFullscreen?.setImageResource(R.drawable.ic_fullscreen)
+            binding.topBarW2G.visibility = View.VISIBLE
+            binding.tabW2GRoom.visibility = View.VISIBLE
+            binding.layoutW2GChatTab.visibility = if (binding.tabW2GRoom.selectedTabPosition == 0) View.VISIBLE else View.GONE
+            binding.rvW2GMembers.visibility = if (binding.tabW2GRoom.selectedTabPosition == 1) View.VISIBLE else View.GONE
+            isFullscreen = false
+        } else {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            btnFullscreen?.setImageResource(R.drawable.ic_fullscreen_exit)
+            binding.topBarW2G.visibility = View.GONE
+            binding.tabW2GRoom.visibility = View.GONE
+            binding.layoutW2GChatTab.visibility = View.GONE
+            binding.rvW2GMembers.visibility = View.GONE
+            isFullscreen = true
+        }
+    }
+
     private fun joinRoom() {
         binding.pbW2GVideoLoading.visibility = View.VISIBLE
         lifecycleScope.launch {
@@ -153,6 +237,7 @@ class W2GRoomActivity : AppCompatActivity() {
     ) {
         binding.tvW2GRoomTitle.text = room.title ?: "Room Nonton Bareng"
         binding.tvW2GRoomSubtitle.text = "${room.animeTitle ?: "Video"} • Ep ${room.episodeIndex ?: "1"} [${room.id}]"
+        binding.playerViewW2G.findViewById<TextView>(R.id.tvPlayerTitle)?.text = "${room.animeTitle ?: room.title ?: "W2G"} - Ep ${room.episodeIndex ?: "1"}"
         binding.tvSyncBadge.text = if (isHost) "● Anda adalah Host" else "● Sinkronisasi Host"
 
         memberAdapter.submitList(members)

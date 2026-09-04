@@ -53,19 +53,24 @@ class ClanActivity : AppCompatActivity() {
     }
 
     private fun loadClanData() {
-        val uid = authManager.userId ?: return
+        val uid = authManager.userId
         binding.pbClanLoading.visibility = View.VISIBLE
         binding.tvEmptyClans.visibility = View.GONE
 
         lifecycleScope.launch {
             try {
-                myClan = UpstashRepository.getMyClan(uid)
-                if (myClan != null) {
-                    binding.cardMyClan.visibility = View.VISIBLE
-                    binding.tvMyClanName.text = "${myClan?.name} [${myClan?.tag}]"
-                    binding.tvMyClanDesc.text = myClan?.description
-                    binding.tvMyClanStats.text = "Level ${myClan?.level} • ${myClan?.memberCount} Anggota"
-                    binding.tvMyClanIcon.text = myClan?.icon ?: "⚔️"
+                if (!uid.isNullOrBlank()) {
+                    myClan = UpstashRepository.getMyClan(uid)
+                    if (myClan != null) {
+                        binding.cardMyClan.visibility = View.VISIBLE
+                        binding.tvMyClanName.text = "${myClan?.name} [${myClan?.tag}]"
+                        binding.tvMyClanDesc.text = myClan?.getEffectiveDescription()
+                        val myInitial = (myClan?.tag?.take(2) ?: myClan?.name?.take(2) ?: "CL").uppercase()
+                        binding.tvMyClanIcon.text = myInitial
+                        binding.tvMyClanIcon.textSize = 16f
+                    } else {
+                        binding.cardMyClan.visibility = View.GONE
+                    }
                 } else {
                     binding.cardMyClan.visibility = View.GONE
                 }
@@ -79,7 +84,7 @@ class ClanActivity : AppCompatActivity() {
                     binding.tvEmptyClans.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ClanActivity, "Gagal memuat clan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@ClanActivity, "Gagal memuat clan: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.pbClanLoading.visibility = View.GONE
             }

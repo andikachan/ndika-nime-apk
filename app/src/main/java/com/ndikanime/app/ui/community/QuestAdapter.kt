@@ -34,10 +34,10 @@ class QuestAdapter(
             holder.binding.btnClaimQuest.text = "Selesai"
             holder.binding.btnClaimQuest.isEnabled = false
         } else if (isComplete) {
-            holder.binding.btnClaimQuest.text = "Klaim +${q.rewardCoins} 🪙"
+            holder.binding.btnClaimQuest.text = "Klaim +${q.rewardCoins} Koin"
             holder.binding.btnClaimQuest.isEnabled = true
         } else {
-            holder.binding.btnClaimQuest.text = "+${q.rewardCoins} 🪙"
+            holder.binding.btnClaimQuest.text = "+${q.rewardCoins} Koin"
             holder.binding.btnClaimQuest.isEnabled = false
         }
 

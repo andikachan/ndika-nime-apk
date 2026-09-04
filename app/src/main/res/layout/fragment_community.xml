@@ -31,11 +31,14 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:layout_marginEnd="6dp"
-            android:text="🎲 Mood"
+            android:backgroundTint="@color/bg_card"
+            android:text="Mood"
             android:textColor="@color/accent_gold"
             android:textSize="11sp"
             android:textStyle="bold"
-            app:cornerRadius="18dp" />
+            app:cornerRadius="18dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClanTop"
@@ -43,11 +46,14 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:layout_marginEnd="6dp"
-            android:text="⚔️ Clan"
+            android:backgroundTint="@color/bg_card"
+            android:text="Clan"
             android:textColor="@color/accent_gold"
             android:textSize="11sp"
             android:textStyle="bold"
-            app:cornerRadius="18dp" />
+            app:cornerRadius="18dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGachaTop"
@@ -55,11 +61,14 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:layout_marginEnd="6dp"
-            android:text="🎰 Gacha"
+            android:backgroundTint="@color/bg_card"
+            android:text="Gacha"
             android:textColor="@color/accent_gold"
             android:textSize="11sp"
             android:textStyle="bold"
-            app:cornerRadius="18dp" />
+            app:cornerRadius="18dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp" />
 
         <!-- User profile status or login button -->
         <com.google.android.material.button.MaterialButton

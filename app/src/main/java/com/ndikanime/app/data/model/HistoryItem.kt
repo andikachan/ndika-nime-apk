@@ -14,4 +14,14 @@ data class HistoryItem(
     @SerializedName("timestamp") val timestamp: Long = System.currentTimeMillis(),
     @SerializedName("progressMs") val progressMs: Long = 0L,
     @SerializedName("isFavorite") var isFavorite: Boolean = false
-) : Parcelable
+) : Parcelable {
+    fun getDisplayCover(): String {
+        val raw = cover.trim()
+        return if (raw.isNotBlank()) {
+            if (raw.startsWith("http")) {
+                "https://cfelainawanggy.pages.dev/?action=proxy&url=" + java.net.URLEncoder.encode(raw, "UTF-8")
+            } else raw
+        } else ""
+    }
+}
+
