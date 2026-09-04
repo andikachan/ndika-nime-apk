@@ -254,7 +254,8 @@ class WatchActivity : AppCompatActivity() {
         val nextId = nextEpisodeId ?: return
         episodeTitle = nextEpisodeTitle ?: "Episode Berikutnya"
         episodeId = nextId
-        binding.tvWatchEpisodeTitle.text = episodeTitle
+        binding.playerView.findViewById<android.widget.TextView>(R.id.tvPlayerTitle)?.text =
+            "$animeTitle - $episodeTitle"
         loadEpisode(episodeId)
     }
 

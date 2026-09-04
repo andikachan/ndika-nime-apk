@@ -300,7 +300,7 @@ class CommunityFragment : Fragment() {
 
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val res = ApiClient.service.getAnimeDetail(anime.id ?: "")
+                    val res = ApiClient.service.getDetail(anime.id ?: "")
                     episodeList = res.data?.episodeList ?: emptyList()
                     tvEpCount.text = "${episodeList.size} Episode Tersedia"
 
@@ -358,13 +358,12 @@ class CommunityFragment : Fragment() {
                 try {
                     var videoUrl = ""
                     try {
-                        val epDetail = ApiClient.service.getEpisodeDetail(selectedEpisode.id ?: "")
-                        val servers = (epDetail.data?.server ?: emptyList()).filter { s ->
-                            !s.link.isNullOrBlank() && s.type == "direct"
-                        }
-                        val best = servers.find { it.quality == "720p" } ?: servers.firstOrNull()
-                        if (best?.link != null) {
-                            videoUrl = "https://cfelainawanggy.pages.dev/?action=stream&url=${best.link}"
+                        val epDetail = ApiClient.service.getEpisode(selectedEpisode.id ?: "")
+                        val servers = epDetail.data?.server ?: emptyList()
+                        val directServers = servers.filter { it.type == "direct" && !it.link.isNullOrBlank() }
+                        val chosenServer = directServers.find { it.quality == "720p" } ?: directServers.firstOrNull() ?: servers.firstOrNull()
+                        if (chosenServer != null) {
+                            videoUrl = chosenServer.getStreamingUrl()
                         }
                     } catch (e: Exception) {}
 

@@ -52,8 +52,8 @@ class HistoryStorage(context: Context) {
                             type = "anime",
                             animeId = id,
                             title = title,
-                            image_cover = cover,
-                            image_poster = cover,
+                            imageCover = cover,
+                            imagePoster = cover,
                             currentEpisode = RemoteHistoryEpisode(index = epIdx, title = episodeTitle)
                         )
                     )
@@ -101,8 +101,8 @@ class HistoryStorage(context: Context) {
                             type = "manga",
                             animeId = slug,
                             title = title,
-                            image_cover = cover,
-                            image_poster = cover,
+                            imageCover = cover,
+                            imagePoster = cover,
                             currentChapter = RemoteHistoryChapter(chapter = chNum, slug = chapterSlug ?: slug)
                         )
                     )
