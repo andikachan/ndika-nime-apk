@@ -208,4 +208,9 @@ object UpstashClient {
         val res = execute("INCRBY", key, amount.toString())
         return res?.asLong ?: 0L
     }
+
+    suspend fun incr(key: String): Long {
+        val res = execute("INCR", key)
+        return res?.asLong ?: 0L
+    }
 }

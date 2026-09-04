@@ -443,7 +443,7 @@ class CommunityFragment : Fragment() {
                     dialog.dismiss()
                     Toast.makeText(context, "Room berhasil dibuat!", Toast.LENGTH_SHORT).show()
                     loadW2GRooms()
-                    launchW2GRoom(room.id, passcode)
+                    launchW2GRoom(room.getEffectiveId(), passcode)
                 } catch (e: Exception) {
                     Toast.makeText(context, "Gagal membuat room: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 } finally {

@@ -73,11 +73,17 @@ data class W2GRoom(
     @SerializedName("animeTitle") val animeTitle: String? = null,
     @SerializedName("animePoster") val animePoster: String? = null,
     @SerializedName("episodeIndex") val episodeIndex: String? = null,
+    @SerializedName("episodeId") val episodeId: String? = null,
+    @SerializedName("videoUrl") val videoUrl: String? = null,
+    @SerializedName("hostId") val hostId: String? = null,
     @SerializedName("hostName") val hostName: String? = null,
     @SerializedName("hostAvatar") val hostAvatar: String? = null,
     @SerializedName("hasPasscode") val hasPasscode: Boolean = false,
-    @SerializedName("activeCount") val activeCount: Int = 1,
-    @SerializedName("isPlaying") val isPlaying: Boolean = false,
+    @SerializedName("passcode") val passcode: String? = null,
+    @SerializedName("activeCount") var activeCount: Int = 1,
+    @SerializedName("isPlaying") var isPlaying: Boolean = false,
+    @SerializedName("currentTime") var currentTime: Double = 0.0,
+    @SerializedName("updatedAt") var updatedAt: Long = 0L,
     @SerializedName("createdAt") val createdAt: Long = 0L
 ) {
     fun getEffectiveId(): String = id ?: roomId ?: ""
@@ -131,11 +137,12 @@ data class W2GRoomDetail(
     @SerializedName("creatorId") val creatorId: String? = null,
     @SerializedName("hostId") val hostId: String? = null,
     @SerializedName("hostName") val hostName: String? = null,
-    @SerializedName("isPlaying") val isPlaying: Boolean = false,
-    @SerializedName("currentTime") val currentTime: Double = 0.0,
-    @SerializedName("estimatedTime") val estimatedTime: Double = 0.0,
-    @SerializedName("updatedAt") val updatedAt: Long = 0L,
-    @SerializedName("hasPasscode") val hasPasscode: Boolean = false
+    @SerializedName("isPlaying") var isPlaying: Boolean = false,
+    @SerializedName("currentTime") var currentTime: Double = 0.0,
+    @SerializedName("estimatedTime") var estimatedTime: Double = 0.0,
+    @SerializedName("updatedAt") var updatedAt: Long = 0L,
+    @SerializedName("hasPasscode") var hasPasscode: Boolean = false,
+    @SerializedName("passcode") var passcode: String? = null
 )
 
 data class W2GMember(
@@ -145,7 +152,8 @@ data class W2GMember(
     @SerializedName("level") val level: Long = 1,
     @SerializedName("title") val title: String? = null,
     @SerializedName("role") val role: String? = null,
-    @SerializedName("clanBadge") val clanBadge: String? = null
+    @SerializedName("clanBadge") val clanBadge: String? = null,
+    @SerializedName("lastSeen") var lastSeen: Long = 0L
 )
 
 data class W2GChatItem(
