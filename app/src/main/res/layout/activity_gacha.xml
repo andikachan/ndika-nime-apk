@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="GACHA & KARTU"
+            android:text="GACHA &amp; KARTU"
             android:textColor="@color/accent_gold"
             android:textSize="17sp"
             android:textStyle="bold" />
