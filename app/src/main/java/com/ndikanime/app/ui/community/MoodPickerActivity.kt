@@ -11,7 +11,7 @@ import com.ndikanime.app.R
 import com.ndikanime.app.data.api.ApiClient
 import com.ndikanime.app.data.model.AnimeItem
 import com.ndikanime.app.databinding.ActivityMoodPickerBinding
-import com.ndikanime.app.ui.anime.AnimeAdapter
+import com.ndikanime.app.ui.anime.AnimeCardAdapter
 import com.ndikanime.app.ui.anime.AnimeDetailActivity
 import kotlinx.coroutines.launch
 
@@ -20,7 +20,7 @@ class MoodPickerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMoodPickerBinding
     private val animeList = mutableListOf<AnimeItem>()
     private val adapter by lazy {
-        AnimeAdapter { anime ->
+        AnimeCardAdapter(isGrid = true) { anime ->
             val intent = Intent(this, AnimeDetailActivity::class.java).apply {
                 putExtra("anime_id", anime.id)
             }
