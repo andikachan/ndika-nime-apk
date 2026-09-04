@@ -13,6 +13,10 @@
         android:icon="@drawable/ic_search"
         android:title="@string/nav_explore" />
     <item
+        android:id="@+id/menu_community"
+        android:icon="@drawable/ic_chat"
+        android:title="Komunitas" />
+    <item
         android:id="@+id/menu_library"
         android:icon="@drawable/ic_library"
         android:title="@string/nav_library" />

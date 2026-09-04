@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import com.ndikanime.app.R
 import com.ndikanime.app.databinding.ActivityMainBinding
 import com.ndikanime.app.ui.anime.AnimeFragment
+import com.ndikanime.app.ui.community.CommunityFragment
 import com.ndikanime.app.ui.explore.ExploreFragment
 import com.ndikanime.app.ui.library.LibraryFragment
 import com.ndikanime.app.ui.manga.MangaFragment
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     private val animeFragment = AnimeFragment()
     private val mangaFragment = MangaFragment()
     private val exploreFragment = ExploreFragment()
+    private val communityFragment = CommunityFragment()
     private val libraryFragment = LibraryFragment()
     private var activeFragment: Fragment = animeFragment
 
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .add(R.id.fragmentContainer, libraryFragment, "library").hide(libraryFragment)
+                .add(R.id.fragmentContainer, communityFragment, "community").hide(communityFragment)
                 .add(R.id.fragmentContainer, exploreFragment, "explore").hide(exploreFragment)
                 .add(R.id.fragmentContainer, mangaFragment, "manga").hide(mangaFragment)
                 .add(R.id.fragmentContainer, animeFragment, "anime")
@@ -39,6 +42,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.menu_anime -> switchFragment(animeFragment)
                 R.id.menu_manga -> switchFragment(mangaFragment)
                 R.id.menu_explore -> switchFragment(exploreFragment)
+                R.id.menu_community -> switchFragment(communityFragment)
                 R.id.menu_library -> switchFragment(libraryFragment)
                 else -> false
             }
