@@ -3,6 +3,7 @@ package com.ndikanime.app.data.model
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 data class MangaListResponse(
     @SerializedName("status") val status: Boolean? = null,
@@ -16,7 +17,7 @@ data class MangaItem(
     @SerializedName("slug") val slug: String? = null,
     @SerializedName("cover") val cover: String? = null,
     @SerializedName("badge") val badge: String? = null,
-    @SerializedName("chapters") val chapters: Any? = null
+    @SerializedName("chapters") val chapters: @RawValue Any? = null
 ) : Parcelable {
     fun getDisplayCover(): String {
         val raw = cover ?: ""
