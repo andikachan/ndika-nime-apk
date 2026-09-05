@@ -129,7 +129,8 @@ data class GenreItem(
     @SerializedName("name") val name: String? = null,
     @SerializedName("title") val title: String? = null,
     @SerializedName("group") val group: String? = null,
-    @SerializedName("total") val total: String? = null
+    @SerializedName("total") val total: String? = null,
+    val isSelected: Boolean = false
 ) {
     fun getDisplayName(): String = name ?: title ?: ""
 }

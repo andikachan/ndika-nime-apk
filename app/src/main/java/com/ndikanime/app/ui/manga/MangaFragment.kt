@@ -170,8 +170,7 @@ class MangaFragment : Fragment() {
         binding.tvHeroMangaIndex.text = String.format("%02d", index + 1)
         binding.tvHeroMangaTotal.text = String.format("%02d", heroMangaList.size)
 
-        val ch = manga.chapters?.firstOrNull()
-        val chapterText = if (ch != null) "Chapter ${ch.getDisplayTitle()}" else "Chapter Terbaru"
+        val chapterText = manga.getDisplayChapter() ?: "Chapter Terbaru"
 
         binding.tvHeroMangaTitle.text = manga.title ?: "Komik"
         binding.tvHeroMangaSubtitle.text = "$chapterText • Baca komik online subtitle Indonesia terlengkap dan terupdate di Ndichan."
