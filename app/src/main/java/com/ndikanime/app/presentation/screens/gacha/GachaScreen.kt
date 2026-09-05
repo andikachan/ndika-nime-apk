@@ -53,7 +53,7 @@ fun GachaScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var userCoins by remember { mutableIntStateOf(authManager.getUserProfile()?.coins ?: 2500) }
+    var userCoins by remember { mutableLongStateOf(authManager.getUserProfile()?.coins ?: 2500L) }
     var pitySR by remember { mutableIntStateOf(0) }
     var pityUR by remember { mutableIntStateOf(0) }
 
@@ -73,7 +73,7 @@ fun GachaScreen(
     var selectedFilter by remember { mutableStateOf<CardRarity?>(null) }
 
     fun executePull(count: Int) {
-        val cost = if (count == 1) 100 else 900
+        val cost = if (count == 1) 100L else 900L
         if (userCoins < cost) return
 
         userCoins -= cost

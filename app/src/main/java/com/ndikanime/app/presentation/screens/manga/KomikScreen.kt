@@ -39,6 +39,7 @@ import com.ndikanime.app.presentation.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun KomikScreen(
     navController: NavController,
@@ -55,17 +56,17 @@ fun KomikScreen(
             try {
                 isLoading = true
                 val heroRes = ApiClient.service.getMangaHeroSlider(15)
-                if (heroRes.status && heroRes.data != null) {
+                if (heroRes.status == true && heroRes.data != null) {
                     heroSliders = heroRes.data.sliderList ?: emptyList()
                 }
 
                 val popularRes = ApiClient.service.getMangaPopularToday(15)
-                if (popularRes.status && popularRes.data != null) {
+                if (popularRes.status == true && popularRes.data != null) {
                     popularToday = popularRes.data.popularList ?: emptyList()
                 }
 
-                val latestRes = ApiClient.service.getMangaLatest(1)
-                if (latestRes.status && latestRes.data != null) {
+                val latestRes = ApiClient.service.getMangaLatest()
+                if (latestRes.status == true && latestRes.data != null) {
                     latestUpdates = latestRes.data.mangaList ?: emptyList()
                 }
             } catch (e: Exception) {
@@ -225,6 +226,7 @@ fun KomikScreen(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun MangaHeroCarousel(
     items: List<MangaHeroItem>,

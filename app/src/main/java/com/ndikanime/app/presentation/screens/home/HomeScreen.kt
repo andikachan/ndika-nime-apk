@@ -39,6 +39,7 @@ import com.ndikanime.app.presentation.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -84,10 +85,10 @@ fun HomeScreen(
         containerColor = BgDarkMain,
         topBar = {
             HomeTopBar(
-                coins = userProfile?.coins ?: 1500,
+                coins = userProfile?.coins ?: 1500L,
                 gems = 50,
                 avatarUrl = userProfile?.picture,
-                level = userProfile?.level ?: 1,
+                level = (userProfile?.level ?: 1L).toInt(),
                 onProfileClick = { navController.navigate(Screen.Profile.createRoute("me")) },
                 onSearchClick = { navController.navigate(Screen.Explore.route) }
             )
@@ -266,7 +267,7 @@ fun HomeScreen(
 
 @Composable
 private fun HomeTopBar(
-    coins: Int,
+    coins: Long,
     gems: Int,
     avatarUrl: String?,
     level: Int,
@@ -415,6 +416,7 @@ private fun StoriesTray(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun HeroSlider(
     animeList: List<AnimeItem>,

@@ -80,7 +80,7 @@ fun NeforaBottomBar(
                 )
 
                 Column(
-                    horizontalAlignment = Alignment.CenterAlignment,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))

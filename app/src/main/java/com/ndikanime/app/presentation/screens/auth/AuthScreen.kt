@@ -74,15 +74,15 @@ fun AuthScreen(
         errorMessage = null
         coroutineScope.launch {
             try {
-                val res = UpstashRepository.loginWithEmail(email.trim(), password)
-                if (res.success && res.user != null) {
-                    authManager.saveUser(res.user)
+                val user = UpstashRepository.login(email.trim(), password)
+                if (user != null) {
+                    authManager.saveUser(user)
                     SoundManager.playLevelUpSfx()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
                 } else {
-                    errorMessage = res.error ?: "Email atau password salah."
+                    errorMessage = "Email atau password salah."
                 }
             } catch (e: Exception) {
                 errorMessage = "Gagal login: ${e.localizedMessage}"
@@ -101,15 +101,15 @@ fun AuthScreen(
         errorMessage = null
         coroutineScope.launch {
             try {
-                val res = UpstashRepository.registerWithEmail(email.trim(), password, name.trim())
-                if (res.success && res.user != null) {
-                    authManager.saveUser(res.user)
+                val user = UpstashRepository.register(name.trim(), email.trim(), password)
+                if (user != null) {
+                    authManager.saveUser(user)
                     SoundManager.playLevelUpSfx()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
                 } else {
-                    errorMessage = res.error ?: "Pendaftaran gagal."
+                    errorMessage = "Email sudah terdaftar atau pendaftaran gagal."
                 }
             } catch (e: Exception) {
                 errorMessage = "Gagal mendaftar: ${e.localizedMessage}"

@@ -72,7 +72,7 @@ fun ExploreScreen(
                     }
                     1 -> {
                         val res = ApiClient.service.searchManga(q)
-                        if (res.status && res.data != null) {
+                        if (res.status == true && res.data != null) {
                             mangaResults = res.data.mangaList ?: emptyList()
                         }
                     }
@@ -317,7 +317,7 @@ fun ExploreScreen(
                                     ) {
                                         AvatarFrameView(
                                             avatarUrl = user.picture,
-                                            level = user.level,
+                                            level = user.level.toInt(),
                                             size = 44.dp
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))

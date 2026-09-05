@@ -63,7 +63,7 @@ fun GlobalChatScreen(
             id = System.currentTimeMillis().toString(),
             senderName = userProfile?.name ?: "Kamu",
             senderAvatar = userProfile?.picture,
-            senderLevel = userProfile?.level ?: 1,
+            senderLevel = (userProfile?.level ?: 1L).toInt(),
             text = inputText.trim()
         )
         messages.add(newMsg)
