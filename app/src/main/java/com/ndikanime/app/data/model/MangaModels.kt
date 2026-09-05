@@ -19,6 +19,8 @@ data class MangaItem(
     @SerializedName("badge") val badge: String? = null,
     @SerializedName("chapters") val chapters: @RawValue Any? = null
 ) : Parcelable {
+    fun getEffectiveSlug(): String = slug ?: ""
+
     fun getDisplayCover(): String {
         val raw = cover ?: ""
         return if (raw.isNotBlank()) {
