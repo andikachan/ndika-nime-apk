@@ -23,60 +23,61 @@ class ProfileActivity : AppCompatActivity() {
     private val authManager by lazy { AuthManager(this) }
     private val historyStorage by lazy { HistoryStorage(this) }
 
+    private var targetUserId: String? = null
+    private var isOwnProfile: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (!authManager.isLoggedIn) {
-            Toast.makeText(this, "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
+        val passedId = intent.getStringExtra("view_user_id")
+        targetUserId = passedId ?: authManager.userId
+        isOwnProfile = (targetUserId == null || targetUserId == authManager.userId)
 
-        setupViews()
-        loadLocalProfile()
-        fetchRemoteProfile()
+        if (!isOwnProfile && targetUserId != null) {
+            setupViews()
+            binding.btnProfileLogout.visibility = View.GONE
+            binding.btnEditBio.visibility = View.GONE
+            fetchRemoteProfile(targetUserId!!)
+        } else {
+            if (!authManager.isLoggedIn) {
+                Toast.makeText(this, "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
+            setupViews()
+            loadLocalProfile()
+            authManager.userId?.let { fetchRemoteProfile(it) }
+        }
     }
 
     private fun setupViews() {
         binding.btnBackProfile.setOnClickListener { finish() }
 
-        binding.btnEditBio.setOnClickListener {
-            showEditBioDialog()
-        }
+        if (isOwnProfile) {
+            binding.btnEditBio.setOnClickListener { showEditBioDialog() }
+            binding.ivProfileAvatar.setOnClickListener { showEditAvatarDialog() }
+            binding.tvProfileName.setOnClickListener { showEditNameDialog() }
+            binding.ivProfileBanner.setOnClickListener { showEditBannerDialog() }
+            binding.tvProfileLevel.setOnClickListener { showFramePicker() }
+            binding.tvProfileTitle.setOnClickListener { showAuraPicker() }
 
-        binding.ivProfileAvatar.setOnClickListener {
-            showEditAvatarDialog()
-        }
-
-        binding.tvProfileName.setOnClickListener {
-            showEditNameDialog()
-        }
-
-        binding.ivProfileBanner.setOnClickListener {
-            showEditBannerDialog()
-        }
-
-        binding.tvProfileLevel.setOnClickListener {
-            showFramePicker()
-        }
-
-        binding.tvProfileTitle.setOnClickListener {
-            showAuraPicker()
-        }
-
-        binding.btnProfileLogout.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Keluar dari Akun?")
-                .setMessage("Apakah kamu yakin ingin logout?")
-                .setPositiveButton("Logout") { _, _ ->
-                    authManager.logout()
-                    Toast.makeText(this, "Berhasil keluar", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-                .setNegativeButton("Batal", null)
-                .show()
+            binding.btnProfileLogout.setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle("Keluar dari Akun?")
+                    .setMessage("Apakah kamu yakin ingin logout?")
+                    .setPositiveButton("Logout") { _, _ ->
+                        authManager.logout()
+                        Toast.makeText(this, "Berhasil keluar", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                    .setNegativeButton("Batal", null)
+                    .show()
+            }
+        } else {
+            binding.btnEditBio.visibility = View.GONE
+            binding.btnProfileLogout.visibility = View.GONE
         }
     }
 
@@ -85,13 +86,14 @@ class ProfileActivity : AppCompatActivity() {
         bindUserData(user)
     }
 
-    private fun fetchRemoteProfile() {
-        val uid = authManager.userId ?: return
+    private fun fetchRemoteProfile(uid: String) {
         lifecycleScope.launch {
             try {
                 val user = UpstashRepository.getProfile(uid)
                 if (user != null) {
-                    authManager.saveUserProfile(user)
+                    if (isOwnProfile) {
+                        authManager.saveUserProfile(user)
+                    }
                     bindUserData(user)
                 }
             } catch (e: Exception) {

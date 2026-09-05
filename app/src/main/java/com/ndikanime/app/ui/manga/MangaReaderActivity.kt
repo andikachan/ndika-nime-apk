@@ -132,7 +132,7 @@ class MangaReaderActivity : AppCompatActivity() {
                                     }
                                     Toast.makeText(
                                         this@MangaReaderActivity,
-                                        "🎉 Level Up! Kamu mencapai Level ${result.newLevel} (${result.newTitle})! +${result.coinsEarned} Koin",
+                                        "Level Up! Kamu mencapai Level ${result.newLevel} (${result.newTitle})! +${result.coinsEarned} Koin",
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }

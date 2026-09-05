@@ -43,11 +43,17 @@ interface AnimeApiService {
     ): AnimeListResponse
 
     // Manga
+    @GET("manga/heroslider")
+    suspend fun getMangaHeroSlider(@Query("limit") limit: Int = 15): MangaListResponse
+
     @GET("manga/populartoday")
     suspend fun getMangaPopularToday(@Query("limit") limit: Int = 30): MangaListResponse
 
     @GET("manga/latest")
     suspend fun getMangaLatest(): MangaListResponse
+
+    @GET("manga/latestproject")
+    suspend fun getMangaLatestProject(): MangaListResponse
 
     @GET("manga/detail")
     suspend fun getMangaDetail(@Query("slug") slug: String): MangaDetailResponse

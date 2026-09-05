@@ -138,6 +138,20 @@ object UpstashRepository {
         newCoins
     }
 
+    suspend fun searchUsers(query: String): List<UserProfile> = withContext(Dispatchers.IO) {
+        if (query.isBlank()) return@withContext emptyList()
+        val q = query.trim().lowercase()
+        val userIds = UpstashClient.smembers("users:all")
+        val results = mutableListOf<UserProfile>()
+        for (uid in userIds.take(50)) {
+            val p = getProfile(uid) ?: continue
+            if (p.name.lowercase().contains(q) || (p.email?.lowercase()?.contains(q) == true) || p.id.lowercase().contains(q)) {
+                results.add(p)
+            }
+        }
+        results
+    }
+
     private fun parseUserProfile(map: Map<String, Any>): UserProfile {
         return UserProfile(
             id = map["id"]?.toString() ?: "",

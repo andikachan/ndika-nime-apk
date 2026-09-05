@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_surface"
+        android:background="#0D0D14"
         android:orientation="vertical"
         android:paddingStart="16dp"
         android:paddingTop="12dp"
@@ -58,7 +58,7 @@
 
         </LinearLayout>
 
-        <!-- Segmented Tab for Anime / Manga -->
+        <!-- Segmented Tab for Anime / Komik / User -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabType"
             android:layout_width="match_parent"
@@ -78,6 +78,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Komik" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User" />
 
         </com.google.android.material.tabs.TabLayout>
 
@@ -124,7 +129,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Ketik judul anime atau komik untuk mencari"
+            android:text="Ketik judul anime, komik, atau nama user untuk mencari"
             android:textColor="@color/text_muted"
             android:textSize="13sp" />
 
