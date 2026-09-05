@@ -88,6 +88,8 @@ class WatchActivity : AppCompatActivity() {
                 playWhenReady = true
                 addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        val btnPlayPause = binding.playerView.findViewById<ImageButton>(R.id.btnPlayPause)
+                        btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
                         if (isPlaying) {
                             startWatchTimeTracker()
                         } else {
@@ -96,6 +98,8 @@ class WatchActivity : AppCompatActivity() {
                     }
 
                     override fun onPlaybackStateChanged(state: Int) {
+                        val btnPlayPause = binding.playerView.findViewById<ImageButton>(R.id.btnPlayPause)
+                        btnPlayPause?.setImageResource(if (exoPlayer?.isPlaying == true) R.drawable.ic_pause else R.drawable.ic_play)
                         when (state) {
                             Player.STATE_BUFFERING -> binding.pbWatchLoading.visibility = View.VISIBLE
                             Player.STATE_READY -> binding.pbWatchLoading.visibility = View.GONE
@@ -114,6 +118,7 @@ class WatchActivity : AppCompatActivity() {
     private fun setupCustomControls() {
         val btnBack = binding.playerView.findViewById<ImageButton>(R.id.btnBackPlayer)
         val tvTitle = binding.playerView.findViewById<TextView>(R.id.tvPlayerTitle)
+        val btnPlayPause = binding.playerView.findViewById<ImageButton>(R.id.btnPlayPause)
         val btnQuality = binding.playerView.findViewById<TextView>(R.id.btnQuality)
         val btnSpeed = binding.playerView.findViewById<TextView>(R.id.btnSpeed)
         val btnRewind = binding.playerView.findViewById<ImageButton>(R.id.btnRewind)
@@ -124,6 +129,21 @@ class WatchActivity : AppCompatActivity() {
 
         btnBack?.setOnClickListener { finish() }
         tvTitle?.text = if (animeTitle.isNotBlank()) "$animeTitle - $episodeTitle" else episodeTitle
+
+        btnPlayPause?.setOnClickListener {
+            val player = exoPlayer ?: return@setOnClickListener
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.play()
+            }
+        }
+
+        binding.playerView.setControllerVisibilityListener(androidx.media3.ui.PlayerView.ControllerVisibilityListener { visibility ->
+            if (visibility == View.VISIBLE) {
+                btnPlayPause?.setImageResource(if (exoPlayer?.isPlaying == true) R.drawable.ic_pause else R.drawable.ic_play)
+            }
+        })
 
         btnComments?.setOnClickListener {
             val target = if (episodeId.isNotBlank()) episodeId else animeId

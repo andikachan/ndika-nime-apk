@@ -108,6 +108,8 @@ class W2GRoomActivity : AppCompatActivity() {
 
         exoPlayer?.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                val btnPlayPause = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnPlayPause)
+                btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
                 if (isHost && !isSelfUpdating) {
                     syncHostState()
                 }
@@ -124,6 +126,8 @@ class W2GRoomActivity : AppCompatActivity() {
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
+                val btnPlayPause = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnPlayPause)
+                btnPlayPause?.setImageResource(if (exoPlayer?.isPlaying == true) R.drawable.ic_pause else R.drawable.ic_play)
                 binding.pbW2GVideoLoading.visibility =
                     if (playbackState == Player.STATE_BUFFERING) View.VISIBLE else View.GONE
             }
@@ -133,6 +137,7 @@ class W2GRoomActivity : AppCompatActivity() {
     private fun setupCustomControls() {
         val btnBack = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnBackPlayer)
         val tvTitle = binding.playerViewW2G.findViewById<TextView>(R.id.tvPlayerTitle)
+        val btnPlayPause = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnPlayPause)
         val btnRewind = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnRewind)
         val btnForward = binding.playerViewW2G.findViewById<ImageButton>(R.id.btnForward)
         val btnSpeed = binding.playerViewW2G.findViewById<TextView>(R.id.btnSpeed)
@@ -145,6 +150,26 @@ class W2GRoomActivity : AppCompatActivity() {
         btnQuality?.visibility = View.GONE
 
         btnBack?.setOnClickListener { finish() }
+
+        btnPlayPause?.setOnClickListener {
+            if (isHost) {
+                val player = exoPlayer ?: return@setOnClickListener
+                if (player.isPlaying) {
+                    player.pause()
+                } else {
+                    player.play()
+                }
+                syncHostState()
+            } else {
+                Toast.makeText(this, "Hanya Host yang dapat mengatur pemutaran", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.playerViewW2G.setControllerVisibilityListener(androidx.media3.ui.PlayerView.ControllerVisibilityListener { visibility ->
+            if (visibility == View.VISIBLE) {
+                btnPlayPause?.setImageResource(if (exoPlayer?.isPlaying == true) R.drawable.ic_pause else R.drawable.ic_play)
+            }
+        })
 
         btnComments?.setOnClickListener {
             binding.tabW2GRoom.getTabAt(0)?.select()

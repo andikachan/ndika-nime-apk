@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="#66000000">
 
-    <!-- Top Bar: Back, Title, Server/Quality, Episodes -->
+    <!-- Top Bar: Back, Title, Server/Quality, Comments, Episodes -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
@@ -16,8 +16,6 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:rotation="180">
-
-        <!-- Flipped gradient for top scrim -->
         <View
             android:layout_width="0dp"
             android:layout_height="0dp" />
@@ -49,7 +47,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
@@ -64,21 +62,21 @@
             android:paddingBottom="4dp"
             android:text="720p"
             android:textColor="@color/accent_gold"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/btnComments"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_community"
             app:tint="@color/white" />
 
         <ImageButton
             android:id="@+id/btnEpisodeList"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_library"
             app:tint="@color/white" />
@@ -93,39 +91,38 @@
         android:gravity="center"
         android:orientation="horizontal">
 
+        <!-- Rewind 10 Seconds -->
         <ImageButton
             android:id="@+id/btnRewind"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_replay_10"
             app:tint="@color/white" />
 
+        <!-- Single Unified Center Play/Pause Button -->
         <ImageButton
-            android:id="@id/exo_play"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="28dp"
-            android:layout_marginEnd="28dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_play"
-            app:tint="@color/accent_gold" />
-
-        <ImageButton
-            android:id="@id/exo_pause"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="28dp"
-            android:layout_marginEnd="28dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:id="@+id/btnPlayPause"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/bg_circle_play_gold"
+            android:padding="18dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_pause"
-            app:tint="@color/accent_gold" />
+            app:tint="#0B0B10" />
 
+        <!-- Forward 10 Seconds -->
         <ImageButton
             android:id="@+id/btnForward"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_forward_10"
             app:tint="@color/white" />
 
@@ -189,10 +186,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
-                android:padding="6dp"
+                android:background="@drawable/bg_badge_dark"
+                android:paddingStart="8dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="3dp"
                 android:text="1.0x"
                 android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <ImageButton
