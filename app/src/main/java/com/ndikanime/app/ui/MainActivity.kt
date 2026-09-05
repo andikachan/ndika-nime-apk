@@ -1,70 +1,28 @@
 package com.ndikanime.app.ui
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import com.ndikanime.app.R
-import com.ndikanime.app.databinding.ActivityMainBinding
-import com.ndikanime.app.ui.anime.AnimeFragment
-import com.ndikanime.app.ui.community.CommunityFragment
-import com.ndikanime.app.ui.explore.ExploreFragment
-import com.ndikanime.app.ui.library.LibraryFragment
-import com.ndikanime.app.ui.manga.MangaFragment
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.navigation.compose.rememberNavController
+import com.ndikanime.app.data.storage.AuthManager
+import com.ndikanime.app.presentation.navigation.NeforaNavGraph
+import com.ndikanime.app.presentation.theme.NeforaTheme
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private val animeFragment = AnimeFragment()
-    private val mangaFragment = MangaFragment()
-    private val exploreFragment = ExploreFragment()
-    private val communityFragment = CommunityFragment()
-    private val libraryFragment = LibraryFragment()
-    private var activeFragment: Fragment = animeFragment
+    private val authManager by lazy { AuthManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .add(R.id.fragmentContainer, libraryFragment, "library").hide(libraryFragment)
-                .add(R.id.fragmentContainer, communityFragment, "community").hide(communityFragment)
-                .add(R.id.fragmentContainer, exploreFragment, "explore").hide(exploreFragment)
-                .add(R.id.fragmentContainer, mangaFragment, "manga").hide(mangaFragment)
-                .add(R.id.fragmentContainer, animeFragment, "anime")
-                .commit()
-            activeFragment = animeFragment
-        }
-
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_anime -> switchFragment(animeFragment)
-                R.id.menu_manga -> switchFragment(mangaFragment)
-                R.id.menu_explore -> switchFragment(exploreFragment)
-                R.id.menu_community -> switchFragment(communityFragment)
-                R.id.menu_library -> switchFragment(libraryFragment)
-                else -> false
+        setContent {
+            NeforaTheme {
+                val navController = rememberNavController()
+                NeforaNavGraph(
+                    navController = navController,
+                    authManager = authManager
+                )
             }
         }
-    }
-
-    private fun switchFragment(target: Fragment): Boolean {
-        if (target === activeFragment) return true
-        supportFragmentManager.beginTransaction()
-            .hide(activeFragment)
-            .show(target)
-            .commit()
-        activeFragment = target
-        return true
-    }
-
-    fun navigateToExplore(isManga: Boolean = false) {
-        binding.bottomNavigation.selectedItemId = R.id.menu_explore
-        exploreFragment.setType(isManga)
-    }
-
-    fun navigateToCommunity() {
-        binding.bottomNavigation.selectedItemId = R.id.menu_community
     }
 }

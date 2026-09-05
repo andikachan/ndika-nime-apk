@@ -7,7 +7,14 @@ import kotlinx.parcelize.Parcelize
 data class AnimeListResponse(
     @SerializedName("status") val status: Boolean = false,
     @SerializedName("total") val total: Int? = null,
-    @SerializedName("data") val data: List<AnimeItem>? = null
+    @SerializedName("data") val data: AnimeListData? = null
+)
+
+data class AnimeListData(
+    @SerializedName("ongoing") val ongoingList: List<OngoingItem>? = null,
+    @SerializedName("popular") val popularList: List<AnimeItem>? = null,
+    @SerializedName("anime") val animeList: List<AnimeItem>? = null,
+    @SerializedName("list") val list: List<AnimeItem>? = null
 )
 
 @Parcelize
@@ -15,6 +22,7 @@ data class AnimeItem(
     @SerializedName("id") val id: String? = null,
     @SerializedName("title") val title: String? = null,
     @SerializedName("synopsis") val synopsis: String? = null,
+    @SerializedName("poster") val poster: String? = null,
     @SerializedName("image_poster") val imagePoster: String? = null,
     @SerializedName("image_cover") val imageCover: String? = null,
     @SerializedName("cover") val cover: String? = null,
@@ -25,7 +33,7 @@ data class AnimeItem(
     @SerializedName("episode") val episode: String? = null
 ) : Parcelable {
     fun getDisplayImage(): String {
-        val raw = imagePoster ?: imageCover ?: cover ?: ""
+        val raw = poster ?: imagePoster ?: imageCover ?: cover ?: ""
         return if (raw.isNotBlank()) {
             "https://cfelainawanggy.pages.dev/?action=proxy&url=" + java.net.URLEncoder.encode(raw, "UTF-8")
         } else ""
@@ -41,9 +49,28 @@ data class AnimeItem(
     }
 }
 
+@Parcelize
+data class OngoingItem(
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("poster") val poster: String? = null,
+    @SerializedName("current_episode") val currentEpisode: String? = null,
+    @SerializedName("type") val type: String? = null,
+    @SerializedName("score") val score: String? = null
+) : Parcelable
+
 data class ScheduleResponse(
     @SerializedName("status") val status: Boolean = false,
-    @SerializedName("data") val data: Map<String, List<AnimeItem>>? = null
+    @SerializedName("data") val data: ScheduleData? = null
+)
+
+data class ScheduleData(
+    @SerializedName("schedule_list") val scheduleList: List<ScheduleDay>? = null
+)
+
+data class ScheduleDay(
+    @SerializedName("day") val day: String? = null,
+    @SerializedName("anime_list") val animeList: List<AnimeItem>? = null
 )
 
 data class AnimeDetailResponse(
@@ -56,6 +83,7 @@ data class AnimeDetail(
     @SerializedName("title") val title: String? = null,
     @SerializedName("synopsis") val synopsis: String? = null,
     @SerializedName("synonyms") val synonyms: String? = null,
+    @SerializedName("poster") val poster: String? = null,
     @SerializedName("image_poster") val imagePoster: String? = null,
     @SerializedName("image_cover") val imageCover: String? = null,
     @SerializedName("type") val type: String? = null,
@@ -68,7 +96,7 @@ data class AnimeDetail(
     @SerializedName("episode_list") val episodeList: List<EpisodeItem>? = null
 ) {
     fun getDisplayPoster(): String {
-        val raw = imagePoster ?: imageCover ?: ""
+        val raw = poster ?: imagePoster ?: imageCover ?: ""
         return if (raw.isNotBlank()) {
             "https://cfelainawanggy.pages.dev/?action=proxy&url=" + java.net.URLEncoder.encode(raw, "UTF-8")
         } else ""
@@ -115,7 +143,8 @@ data class ServerItem(
 ) {
     fun getStreamingUrl(): String {
         val l = link ?: return ""
-        return "https://cfelainawanggy.pages.dev/?action=stream&url=" + java.net.URLEncoder.encode(l, "UTF-8")
+        return if (l.contains("cfelainawanggy.pages.dev")) l
+        else "https://cfelainawanggy.pages.dev/?action=stream&url=" + java.net.URLEncoder.encode(l, "UTF-8")
     }
 }
 
