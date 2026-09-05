@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.ndikanime.app.data.model.W2GRoomItem
+import com.ndikanime.app.data.model.W2GRoom
 import com.ndikanime.app.data.upstash.UpstashRepository
 import com.ndikanime.app.presentation.navigation.Screen
 import com.ndikanime.app.presentation.theme.*
@@ -33,14 +33,14 @@ fun Watch2getherScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var rooms by remember { mutableStateOf<List<W2GRoomItem>>(emptyList()) }
+    var rooms by remember { mutableStateOf<List<W2GRoom>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
                 isLoading = true
-                val res = UpstashRepository.listW2GRooms()
+                val res = UpstashRepository.getW2GRooms()
                 rooms = res
             } catch (e: Exception) {
                 // error
@@ -117,7 +117,7 @@ fun Watch2getherScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    navController.navigate(Screen.W2GRoom.createRoute(room.id, ""))
+                                    navController.navigate(Screen.W2GRoom.createRoute(room.getEffectiveId(), ""))
                                 }
                         ) {
                             Row(
@@ -150,7 +150,7 @@ fun Watch2getherScreen(
                                     )
                                 }
 
-                                if (room.isPrivate == true) {
+                                if (room.isPrivate) {
                                     Icon(Icons.Default.Lock, contentDescription = "Private", tint = GoldPrimary, modifier = Modifier.size(18.dp))
                                 }
                             }

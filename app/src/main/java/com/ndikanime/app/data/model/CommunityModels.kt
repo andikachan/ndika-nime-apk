@@ -86,6 +86,7 @@ data class W2GRoom(
     @SerializedName("updatedAt") var updatedAt: Long = 0L,
     @SerializedName("createdAt") val createdAt: Long = 0L
 ) {
+    val isPrivate: Boolean get() = hasPasscode || !passcode.isNullOrBlank()
     fun getEffectiveId(): String = id ?: roomId ?: ""
     fun getDisplayPoster(): String {
         val raw = animePoster ?: ""
@@ -154,7 +155,9 @@ data class W2GMember(
     @SerializedName("role") val role: String? = null,
     @SerializedName("clanBadge") val clanBadge: String? = null,
     @SerializedName("lastSeen") var lastSeen: Long = 0L
-)
+) {
+    val isHost: Boolean get() = role == "host" || role == "admin"
+}
 
 data class W2GChatItem(
     @SerializedName("id") val id: String? = null,

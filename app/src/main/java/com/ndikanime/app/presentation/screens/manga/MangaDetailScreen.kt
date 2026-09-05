@@ -45,7 +45,7 @@ fun MangaDetailScreen(
             try {
                 isLoading = true
                 val res = ApiClient.service.getMangaDetail(slug)
-                if (res.status && res.data != null) {
+                if (res.status == true && res.data != null) {
                     detailData = res.data
                 }
             } catch (e: Exception) {

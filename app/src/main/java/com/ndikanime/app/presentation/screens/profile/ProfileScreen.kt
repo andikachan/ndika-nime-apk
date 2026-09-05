@@ -41,10 +41,10 @@ fun ProfileScreen(
     val userProfile = authManager.getUserProfile()
     val isMe = userId == "me" || userId == authManager.userId
 
-    val level = userProfile?.level ?: 1
+    val level = (userProfile?.level ?: 1L).toInt()
     val title = userProfile?.title ?: "Anime Newbie"
-    val coins = userProfile?.coins ?: 1500
-    val watchTimeMinutes = (userProfile?.watchTime ?: 0) / 60
+    val coins = userProfile?.coins ?: 1500L
+    val watchTimeMinutes = (userProfile?.watchTime ?: 0L) / 60
 
     Scaffold(
         containerColor = BgDarkMain,

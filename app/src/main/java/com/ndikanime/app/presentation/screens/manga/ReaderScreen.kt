@@ -52,7 +52,7 @@ fun ReaderScreen(
             try {
                 isLoading = true
                 val res = ApiClient.service.getMangaRead(chSlug)
-                if (res.status && res.data != null) {
+                if (res.status == true && res.data != null) {
                     readData = res.data
                 }
             } catch (e: Exception) {

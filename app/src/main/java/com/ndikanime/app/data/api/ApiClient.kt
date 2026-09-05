@@ -52,4 +52,13 @@ object ApiClient {
             .build()
             .create(AnimeApiService::class.java)
     }
+
+    val communityService: CommunityApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(ANIME_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(CommunityApiService::class.java)
+    }
 }
